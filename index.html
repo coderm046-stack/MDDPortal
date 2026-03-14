@@ -340,22 +340,12 @@ tbody td{padding:.95rem 1.2rem;font-size:.88rem;color:var(--ink2);}
 }
 .mat-card a:hover{background:var(--deep);transform:scale(1.03);}
 
-/* ════════════ CONTACT ════════════ */
-.contact-strip{
-  background:linear-gradient(135deg,var(--orange) 0%,var(--deep) 100%);
-  padding:3.5rem 1.5rem;text-align:center;margin-top:2rem;position:relative;overflow:hidden;
-}
-.contact-strip::before{content:'';position:absolute;top:-60px;right:-60px;width:250px;height:250px;
-  border-radius:50%;background:rgba(255,255,255,.07);}
-.contact-strip h2{font-family:'Playfair Display',serif;color:#fff;font-size:1.9rem;margin-bottom:.6rem;position:relative;}
-.contact-strip p{color:rgba(255,255,255,.75);margin-bottom:2rem;position:relative;}
-.contact-strip a{
-  display:inline-block;background:#fff;color:var(--orange);font-weight:700;
-  font-size:.88rem;letter-spacing:.06em;text-transform:uppercase;padding:.9rem 2.2rem;
-  border-radius:10px;text-decoration:none;transition:all .2s;position:relative;
-  box-shadow:0 4px 16px rgba(0,0,0,.2);
-}
-.contact-strip a:hover{background:var(--orange-lt);transform:translateY(-2px);}
+
+
+
+
+
+
 
 /* ════════════════════════════
    ADMIN PANEL — dark orange
@@ -658,7 +648,6 @@ footer{background:var(--ink);color:#5a4534;text-align:center;padding:1.5rem;
       <a onclick="showPage('papers',this)">Papers</a>
       <a onclick="showPage('videos',this)">Videos</a>
       <a onclick="showPage('blog',this)">Blog</a>
-      <a onclick="showPage('contact',this)">Contact</a>
       <a class="admin-btn" onclick="openAdmin()">⚙ Admin</a>
     </nav>
     <div class="hamburger" onclick="toggleMenu()">
@@ -808,28 +797,6 @@ footer{background:var(--ink);color:#5a4534;text-align:center;padding:1.5rem;
   </div>
 </div>
 
-<!-- ══════════ CONTACT ══════════ -->
-<div class="page" id="page-contact">
-  <div class="page-hdr"><h1>💬 Contact</h1><p>Reach out for doubts, guidance, or feedback</p></div>
-  <div class="section">
-    <div class="sec-hdr">
-      <span class="sec-tag">Get in Touch</span>
-      <h2 class="sec-title">I'd Love to <em>Hear from You</em></h2>
-      <div class="divider"></div>
-    </div>
-    <div class="cards" style="grid-template-columns:repeat(auto-fill,minmax(230px,1fr))">
-      <div class="card"><div class="card-icon">📧</div><h3>Email</h3><p><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f0839891829d91de84959193989582b08393989f9f9cde959485de999e">[email&#160;protected]</a></p></div>
-      <div class="card"><div class="card-icon">📞</div><h3>Phone</h3><p>+91 98765 43210</p><p style="margin-top:.4rem;font-size:.8rem;color:var(--muted)">Mon–Sat, 9 AM – 5 PM</p></div>
-      <div class="card"><div class="card-icon">🏫</div><h3>School</h3><p>Govt. Higher Secondary School(MM)<br>Khanvel, Silvassa, Dadra Nagar Haveli Diu & Daman</p></div>
-      <div class="card"><div class="card-icon">🕐</div><h3>Office Hours</h3><p>Monday to Friday<br>10:00 AM – 12:00 PM</p></div>
-    </div>
-  </div>
-  <div class="contact-strip">
-    <h2>Have a question about studies?</h2>
-    <p>Don't hesitate — reaching out is the first step to understanding.</p>
-    <a href="/cdn-cgi/l/email-protection#8ae7eeeeebe6fce3eee4e2caede7ebe3e6a4e9e5e7">Send an Email</a>
-  </div>
-</div>
 
 <footer>© 2025 MDD. Portal · Educator · All rights reserved</footer>
 
