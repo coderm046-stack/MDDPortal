@@ -10,7 +10,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, orderBy, query }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+  import { getAuth, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
   // ──────────────────────────────────────────────
@@ -43,7 +43,6 @@
   }
 
   window.FB = { auth, loadCollection, addItem, removeItem,
-    signIn: (e,p) => signInWithEmailAndPassword(auth,e,p),
     signOut: () => signOut(auth),
     onAuth: (cb) => onAuthStateChanged(auth, cb)
   };
@@ -443,6 +442,166 @@ tbody td{padding:.95rem 1.2rem;font-size:.88rem;color:var(--ink2);}
 .item-row-info h4{color:var(--adm-text);font-size:.9rem;margin-bottom:.2rem;}
 .item-row-info p{color:var(--adm-muted);font-size:.76rem;}
 
+/* ════════════════════════════════════
+   PER-PANEL COLOUR THEMES
+════════════════════════════════════ */
+
+/* ── 🎬 VIDEOS — Purple / Violet ── */
+#videos-panel .add-form{border-color:#5b21b6;border-left:4px solid #7c3aed;background:linear-gradient(160deg,#1a0f2e 0%,#2a1508 100%);}
+#videos-panel .add-form h3{color:#a78bfa;}
+#videos-panel .panel-tag{color:#a78bfa;}
+#videos-panel .add-form .btn:not(.btn-danger):not(.btn-ghost):not(.btn-sm){background:linear-gradient(135deg,#7c3aed,#a855f7);}
+#videos-panel .add-form .btn.btn-sm{background:linear-gradient(135deg,#7c3aed,#a855f7);}
+#videos-panel .field input:focus,#videos-panel .field textarea:focus,#videos-panel .field select:focus{border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,.15);}
+#videos-panel h2{background:linear-gradient(90deg,#a78bfa,#c4b5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.sidebar-item[onclick*="videos"].active{background:rgba(124,58,237,.2)!important;color:#a78bfa!important;}
+.sidebar-item[onclick*="videos"]:hover{color:#a78bfa;}
+
+/* ── ✍️ BLOG — Teal / Cyan ── */
+#blog-panel .add-form{border-color:#0f766e;border-left:4px solid #0d9488;background:linear-gradient(160deg,#051a18 0%,#2a1508 100%);}
+#blog-panel .add-form h3{color:#5eead4;}
+#blog-panel .add-form .btn.btn-sm{background:linear-gradient(135deg,#0d9488,#06b6d4);}
+#blog-panel .field input:focus,#blog-panel .field textarea:focus,#blog-panel .field select:focus{border-color:#0d9488;box-shadow:0 0 0 3px rgba(13,148,136,.15);}
+#blog-panel h2{background:linear-gradient(90deg,#5eead4,#67e8f9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.sidebar-item[onclick*="blog"].active{background:rgba(13,148,136,.2)!important;color:#5eead4!important;}
+.sidebar-item[onclick*="blog"]:hover{color:#5eead4;}
+
+/* ── 📝 PAPERS — Blue / Indigo ── */
+#papers-panel .add-form{border-color:#1d4ed8;border-left:4px solid #2563eb;background:linear-gradient(160deg,#080f2e 0%,#2a1508 100%);}
+#papers-panel .add-form h3{color:#93c5fd;}
+#papers-panel .add-form .btn.btn-sm{background:linear-gradient(135deg,#2563eb,#6366f1);}
+#papers-panel .field input:focus,#papers-panel .field textarea:focus,#papers-panel .field select:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15);}
+#papers-panel h2{background:linear-gradient(90deg,#93c5fd,#a5b4fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.sidebar-item[onclick*="papers"].active{background:rgba(37,99,235,.2)!important;color:#93c5fd!important;}
+.sidebar-item[onclick*="papers"]:hover{color:#93c5fd;}
+
+/* ── 📂 MATERIAL — Emerald / Green ── */
+#material-panel .add-form{border-color:#065f46;border-left:4px solid #059669;background:linear-gradient(160deg,#051a10 0%,#2a1508 100%);}
+#material-panel .add-form h3{color:#6ee7b7;}
+#material-panel .add-form .btn.btn-sm{background:linear-gradient(135deg,#059669,#10b981);}
+#material-panel .field input:focus,#material-panel .field textarea:focus,#material-panel .field select:focus{border-color:#059669;box-shadow:0 0 0 3px rgba(5,150,105,.15);}
+#material-panel h2{background:linear-gradient(90deg,#6ee7b7,#a7f3d0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.sidebar-item[onclick*="material"].active{background:rgba(5,150,105,.2)!important;color:#6ee7b7!important;}
+.sidebar-item[onclick*="material"]:hover{color:#6ee7b7;}
+
+/* ── 📚 SYLLABUS — Rose / Pink ── */
+#syllabus-panel .add-form{border-color:#9f1239;border-left:4px solid #e11d48;background:linear-gradient(160deg,#200510 0%,#2a1508 100%);}
+#syllabus-panel .add-form h3{color:#fda4af;}
+#syllabus-panel .add-form .btn.btn-sm{background:linear-gradient(135deg,#e11d48,#f43f5e);}
+#syllabus-panel .field input:focus,#syllabus-panel .field textarea:focus,#syllabus-panel .field select:focus{border-color:#e11d48;box-shadow:0 0 0 3px rgba(225,29,72,.15);}
+#syllabus-panel h2{background:linear-gradient(90deg,#fda4af,#fecdd3);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.sidebar-item[onclick*="syllabus"].active{background:rgba(225,29,72,.2)!important;color:#fda4af!important;}
+.sidebar-item[onclick*="syllabus"]:hover{color:#fda4af;}
+
+/* ── 📅 PLANNING — Amber / Gold ── */
+#planning-panel .add-form{border-color:#92400e;border-left:4px solid #d97706;background:linear-gradient(160deg,#1c1000 0%,#2a1508 100%);}
+#planning-panel .add-form h3{color:#fcd34d;}
+#planning-panel .add-form .btn.btn-sm{background:linear-gradient(135deg,#d97706,#f59e0b);}
+#planning-panel .field input:focus,#planning-panel .field textarea:focus,#planning-panel .field select:focus{border-color:#d97706;box-shadow:0 0 0 3px rgba(217,119,6,.15);}
+#planning-panel h2{background:linear-gradient(90deg,#fcd34d,#fde68a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.sidebar-item[onclick*="planning"].active{background:rgba(217,119,6,.2)!important;color:#fcd34d!important;}
+.sidebar-item[onclick*="planning"]:hover{color:#fcd34d;}
+
+/* ════════════ PDF VIEWER MODAL ════════════ */
+#pdf-modal{
+  display:none;position:fixed;inset:0;z-index:800;
+  background:rgba(0,0,0,.82);backdrop-filter:blur(6px);
+}
+#pdf-modal.open{display:flex;align-items:center;justify-content:center;padding:1rem;}
+
+.pdf-modal-box{
+  background:#1a1a2e;border:1.5px solid rgba(255,255,255,.1);border-radius:20px;
+  width:100%;max-width:960px;height:90vh;display:flex;flex-direction:column;
+  box-shadow:0 30px 80px rgba(0,0,0,.7);overflow:hidden;
+  animation:slideUp .25s ease;
+}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+
+.pdf-modal-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1rem 1.5rem;border-bottom:1.5px solid rgba(255,255,255,.08);
+  background:linear-gradient(135deg,#12122a,#1e1e3a);flex-shrink:0;
+}
+.pdf-modal-title-wrap{display:flex;align-items:center;gap:.75rem;min-width:0;flex:1;}
+.pdf-modal-title{
+  font-family:'Playfair Display',serif;font-size:1.05rem;color:#fff;font-weight:700;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.pdf-file-icon{
+  width:38px;height:38px;background:linear-gradient(135deg,#e8610a,#f07d2a);
+  border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;flex-shrink:0;
+}
+.pdf-modal-meta{font-size:.72rem;color:rgba(255,255,255,.35);margin-top:.1rem;font-family:'Plus Jakarta Sans',sans-serif;}
+
+.pdf-modal-actions{display:flex;align-items:center;gap:.5rem;flex-shrink:0;margin-left:1rem;}
+.pdf-action-btn{
+  display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1rem;
+  border-radius:9px;font-size:.78rem;font-weight:700;cursor:pointer;border:none;
+  letter-spacing:.04em;transition:all .2s;text-decoration:none;
+}
+.pdf-action-btn.download{background:linear-gradient(135deg,#e8610a,#f07d2a);color:#fff;}
+.pdf-action-btn.download:hover{opacity:.85;transform:translateY(-1px);}
+.pdf-action-btn.newwin{background:rgba(255,255,255,.08);color:rgba(255,255,255,.65);border:1px solid rgba(255,255,255,.12);}
+.pdf-action-btn.newwin:hover{background:rgba(255,255,255,.14);color:#fff;}
+.pdf-close-btn{
+  width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.6);
+  font-size:1.15rem;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .2s;flex-shrink:0;
+}
+.pdf-close-btn:hover{background:rgba(220,38,38,.3);color:#fff;border-color:#dc2626;}
+
+.pdf-modal-toolbar{
+  display:flex;align-items:center;gap:.6rem;padding:.55rem 1.5rem;
+  background:#0e0e20;border-bottom:1px solid rgba(255,255,255,.05);flex-shrink:0;
+}
+.pdf-type-badge{font-size:.67rem;padding:.22rem .65rem;border-radius:100px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
+.pdf-type-badge.pdf{background:rgba(232,97,10,.18);color:#f07d2a;border:1px solid rgba(232,97,10,.3);}
+.pdf-type-badge.img{background:rgba(99,102,241,.18);color:#818cf8;border:1px solid rgba(99,102,241,.3);}
+.pdf-type-badge.doc{background:rgba(37,99,235,.18);color:#60a5fa;border:1px solid rgba(37,99,235,.3);}
+.pdf-type-badge.other{background:rgba(255,255,255,.07);color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.1);}
+.pdf-toolbar-hint{font-size:.73rem;color:rgba(255,255,255,.25);margin-left:auto;}
+
+.pdf-modal-body{flex:1;overflow:hidden;position:relative;background:#0a0a18;}
+.pdf-modal-body iframe{width:100%;height:100%;border:none;display:block;}
+.pdf-modal-body img.preview-img{width:100%;height:100%;object-fit:contain;display:block;padding:1rem;}
+
+.pdf-loading{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:.9rem;color:rgba(255,255,255,.35);font-size:.88rem;
+  background:#0a0a18;z-index:2;
+}
+.pdf-loading .load-ring{
+  width:44px;height:44px;border:3px solid rgba(232,97,10,.15);
+  border-top-color:var(--orange);border-radius:50%;animation:spin .8s linear infinite;
+}
+.pdf-no-preview{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:1.1rem;color:rgba(255,255,255,.45);text-align:center;padding:2.5rem;
+}
+.pdf-no-preview .np-icon{font-size:3.5rem;opacity:.4;display:block;}
+.pdf-no-preview h3{color:rgba(255,255,255,.6);font-size:1.05rem;font-family:'Playfair Display',serif;}
+.pdf-no-preview p{font-size:.85rem;line-height:1.65;max-width:380px;color:rgba(255,255,255,.3);}
+
+/* View / Download buttons on cards & table rows */
+.file-btns{display:flex;gap:.45rem;align-items:center;flex-wrap:wrap;}
+.btn-view-file{
+  display:inline-flex;align-items:center;gap:.35rem;
+  background:rgba(232,97,10,.1);color:var(--orange);
+  border:1.5px solid rgba(232,97,10,.3);border-radius:7px;
+  padding:.35rem .8rem;font-size:.78rem;font-weight:700;cursor:pointer;transition:all .2s;
+}
+.btn-view-file:hover{background:var(--orange);color:#fff;}
+.btn-dl-file{
+  display:inline-flex;align-items:center;gap:.35rem;
+  background:rgba(255,255,255,.04);color:var(--ink2);
+  border:1.5px solid var(--border);border-radius:7px;
+  padding:.35rem .8rem;font-size:.78rem;font-weight:700;cursor:pointer;transition:all .2s;text-decoration:none;
+}
+.btn-dl-file:hover{background:var(--orange-lt);color:var(--deep);border-color:var(--orange);}
+.mat-card .file-btns{margin-top:.85rem;}
+
 /* ── FOOTER ── */
 footer{background:var(--ink);color:#5a4534;text-align:center;padding:1.5rem;
   font-size:.78rem;letter-spacing:.05em;}
@@ -659,7 +818,7 @@ footer{background:var(--ink);color:#5a4534;text-align:center;padding:1.5rem;
       <div class="divider"></div>
     </div>
     <div class="cards" style="grid-template-columns:repeat(auto-fill,minmax(230px,1fr))">
-      <div class="card"><div class="card-icon">📧</div><h3>Email</h3><p>sharma.teacher@school.edu.in</p></div>
+      <div class="card"><div class="card-icon">📧</div><h3>Email</h3><p><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f0839891829d91de84959193989582b08393989f9f9cde959485de999e">[email&#160;protected]</a></p></div>
       <div class="card"><div class="card-icon">📞</div><h3>Phone</h3><p>+91 98765 43210</p><p style="margin-top:.4rem;font-size:.8rem;color:var(--muted)">Mon–Sat, 9 AM – 5 PM</p></div>
       <div class="card"><div class="card-icon">🏫</div><h3>School</h3><p>Sunrise Public School<br>Block C, Sector 12, New Delhi</p></div>
       <div class="card"><div class="card-icon">🕐</div><h3>Office Hours</h3><p>Monday to Friday<br>10:00 AM – 12:00 PM</p></div>
@@ -668,7 +827,7 @@ footer{background:var(--ink);color:#5a4534;text-align:center;padding:1.5rem;
   <div class="contact-strip">
     <h2>Have a question about studies?</h2>
     <p>Don't hesitate — reaching out is the first step to understanding.</p>
-    <a href="mailto:mddalvidnh@gmail.com">Send an Email</a>
+    <a href="/cdn-cgi/l/email-protection#8ae7eeeeebe6fce3eee4e2caede7ebe3e6a4e9e5e7">Send an Email</a>
   </div>
 </div>
 
@@ -864,7 +1023,7 @@ footer{background:var(--ink);color:#5a4534;text-align:center;padding:1.5rem;
 </div><!-- /admin-overlay -->
 
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ── NAV ──
 function showPage(id, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -904,7 +1063,6 @@ function showDashboard() {
 // ── AUTH ──
 window._loggedIn = false;
 window.addEventListener('fb-ready', () => {
-  window.FB.onAuth(user => { window._loggedIn = !!user; if (user) loadAllPublic(); });
   loadAllPublic();
 });
 
@@ -916,14 +1074,20 @@ async function doLogin() {
   err.style.display = 'none';
   btn.innerHTML = '<span class="spinner"></span> Signing in…';
   btn.disabled = true;
-  try {
-    await window.FB.signIn(email, pass);
+  // ── Hardcoded admin credentials ──
+  const ADMIN_EMAIL    = 'admin@mdd.com';
+  const ADMIN_PASSWORD = 'admin123';
+  await new Promise(r => setTimeout(r, 600)); // small delay for UX
+  if (email === ADMIN_EMAIL && pass === ADMIN_PASSWORD) {
+    window._loggedIn = true;
     showDashboard(); toast('Welcome back! 👋');
-  } catch(e) { err.style.display = 'block'; }
-  finally { btn.innerHTML = 'Sign In to Admin'; btn.disabled = false; }
+  } else {
+    err.style.display = 'block';
+  }
+  btn.innerHTML = 'Sign In to Admin'; btn.disabled = false;
 }
 async function doLogout() {
-  await window.FB.signOut(); window._loggedIn = false;
+  window._loggedIn = false;
   showLoginScreen(); closeAdmin(); toast('Logged out.');
 }
 
@@ -985,8 +1149,13 @@ async function loadPublicPapers() {
   const el = document.getElementById('papers-list');
   if (!items.length) { el.innerHTML='<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--muted)">No papers yet.</td></tr>'; return; }
   el.innerHTML = items.map(p=>`<tr>
-    <td>${p.title}</td><td>${p.cls||''}</td><td>${p.subject||''}</td><td>${p.year||''}</td>
-    <td><a class="pdf-link" href="${p.url}" target="_blank">↓ Download</a></td>
+    <td><strong>${p.title}</strong></td><td>${p.cls||''}</td><td>${p.subject||''}</td><td>${p.year||''}</td>
+    <td>
+      <div class="file-btns">
+        ${p.url?`<button class="btn-view-file" onclick="openPdfModal(${JSON.stringify(p.url)},${JSON.stringify(p.title)},${JSON.stringify(p.subject||'')})">👁 View</button>`:''}
+        ${p.url?`<a class="btn-dl-file" href="${p.url}" download target="_blank">↓ Download</a>`:''}
+      </div>
+    </td>
   </tr>`).join('');
 }
 
@@ -1023,7 +1192,10 @@ async function loadPublicMaterial() {
       <div class="mat-type">${icons[m.type]||'📄'} ${m.type||'Notes'}</div>
       <h4>${m.title}</h4>
       <p>${m.desc||m.subject||''}</p>
-      ${m.url?`<a href="${m.url}" target="_blank">↓ Download</a>`:''}
+      ${m.url?`<div class="file-btns">
+        <button class="btn-view-file" onclick="openPdfModal(${JSON.stringify(m.url)},${JSON.stringify(m.title)},${JSON.stringify(m.type||'')})">👁 View</button>
+        <a class="btn-dl-file" href="${m.url}" download target="_blank">↓ Download</a>
+      </div>`:''}
     </div>`).join('');
 }
 
@@ -1147,12 +1319,161 @@ async function delItem(col,id,rA,rP) {
   await window.FB.removeItem(col,id); toast('Deleted.'); rA(); rP();
 }
 
-function toggleAcc(hdr){hdr.parentElement.classList.toggle('open');}
+function toggleAcc(hdr){ hdr.parentElement.classList.toggle('open'); }
 
-document.addEventListener('keydown',e=>{
-  if(e.key==='Enter'&&document.getElementById('admin-login').style.display!=='none'
-    &&document.getElementById('admin-overlay').classList.contains('open')) doLogin();
+// ══════════════════════════════
+//  PDF VIEWER MODAL
+// ══════════════════════════════
+function getFileType(url) {
+  if (!url) return 'other';
+  const u = url.toLowerCase().split('?')[0];
+  if (u.includes('drive.google.com') || u.includes('docs.google.com')) return 'gdrive';
+  if (u.endsWith('.pdf')) return 'pdf';
+  if (/\.(png|jpg|jpeg|gif|webp|svg)$/.test(u)) return 'image';
+  if (/\.(doc|docx|ppt|pptx|xls|xlsx)$/.test(u)) return 'office';
+  return 'other';
+}
+
+function getEmbedUrl(url, type) {
+  if (type === 'gdrive') {
+    // Convert Google Drive share links to embed/preview
+    let id = null;
+    const m1 = url.match(/\/file\/d\/([^\/]+)/);
+    const m2 = url.match(/[?&]id=([^&]+)/);
+    if (m1) id = m1[1];
+    else if (m2) id = m2[1];
+    if (id) return `https://drive.google.com/file/d/${id}/preview`;
+    // If already preview link, return as-is
+    if (url.includes('/preview')) return url;
+    return url;
+  }
+  if (type === 'pdf') return url + '#toolbar=1&navpanes=1&scrollbar=1&view=FitH';
+  if (type === 'office') return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`;
+  return url;
+}
+
+function openPdfModal(url, title, meta) {
+  const modal   = document.getElementById('pdf-modal');
+  const body    = document.getElementById('pdf-modal-body');
+  const loading = document.getElementById('pdf-loading');
+  const titleEl = document.getElementById('pdf-modal-title');
+  const metaEl  = document.getElementById('pdf-modal-meta');
+  const badge   = document.getElementById('pdf-type-badge');
+  const hint    = document.getElementById('pdf-toolbar-hint');
+  const iconEl  = document.getElementById('pdf-file-icon');
+  const dlBtn   = document.getElementById('pdf-download-btn');
+  const nwBtn   = document.getElementById('pdf-newwin-btn');
+
+  // Set header info
+  titleEl.textContent = title || 'Document';
+  metaEl.textContent  = meta  || '';
+  dlBtn.href = url;
+  nwBtn.href = url;
+
+  // Detect type
+  const type = getFileType(url);
+  const embedUrl = getEmbedUrl(url, type);
+
+  // Badge + icon + hint
+  const typeMap = {
+    gdrive: { label:'Google Drive', cls:'pdf', icon:'📄', hint:'Viewing via Google Drive preview' },
+    pdf:    { label:'PDF',          cls:'pdf', icon:'📕', hint:'Use browser controls to zoom · scroll to navigate' },
+    image:  { label:'Image',        cls:'img', icon:'🖼️', hint:'Click and drag to pan · scroll to zoom (in new tab)' },
+    office: { label:'Office Doc',   cls:'doc', icon:'📊', hint:'Viewing via Microsoft Office Online viewer' },
+    other:  { label:'File',         cls:'other',icon:'📁', hint:'Preview not available for this file type' },
+  };
+  const info = typeMap[type] || typeMap.other;
+  badge.textContent = info.label;
+  badge.className   = `pdf-type-badge ${info.cls}`;
+  iconEl.textContent = info.icon;
+  hint.textContent   = info.hint;
+
+  // Clear body and show loading
+  body.innerHTML = '<div class="pdf-loading" id="pdf-loading"><div class="load-ring"></div><span>Loading document…</span></div>';
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  if (type === 'image') {
+    const img = document.createElement('img');
+    img.className = 'preview-img';
+    img.src = url;
+    img.onload = () => { body.innerHTML = ''; body.appendChild(img); };
+    img.onerror = () => showNoPreview(body, url);
+  } else if (type === 'other') {
+    showNoPreview(body, url);
+  } else {
+    const iframe = document.createElement('iframe');
+    iframe.src = embedUrl;
+    iframe.allow = 'autoplay';
+    iframe.onload = () => {
+      const ld = document.getElementById('pdf-loading');
+      if (ld) ld.style.display = 'none';
+    };
+    setTimeout(() => {
+      const ld = document.getElementById('pdf-loading');
+      if (ld) ld.style.display = 'none';
+    }, 4000);
+    body.appendChild(iframe);
+  }
+}
+
+function showNoPreview(body, url) {
+  body.innerHTML = `<div class="pdf-no-preview">
+    <span class="np-icon">📁</span>
+    <h3>Preview Not Available</h3>
+    <p>This file type cannot be previewed directly in the browser. Please download the file to view it.</p>
+    <a class="pdf-action-btn download" href="${url}" download target="_blank">↓ Download File</a>
+  </div>`;
+}
+
+function closePdfModal() {
+  document.getElementById('pdf-modal').classList.remove('open');
+  document.body.style.overflow = '';
+  // Kill iframe to stop loading
+  const body = document.getElementById('pdf-modal-body');
+  body.innerHTML = '';
+}
+
+// Close on backdrop click + Escape — wait for DOM
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('pdf-modal').addEventListener('click', function(e){
+    if (e.target === this) closePdfModal();
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closePdfModal(); });
 });
+
 </script>
+
+<!-- ══════════════════════════════
+     PDF VIEWER MODAL
+══════════════════════════════ -->
+<div id="pdf-modal">
+  <div class="pdf-modal-box">
+    <div class="pdf-modal-header">
+      <div class="pdf-modal-title-wrap">
+        <div class="pdf-file-icon" id="pdf-file-icon">📄</div>
+        <div>
+          <div class="pdf-modal-title" id="pdf-modal-title">Document</div>
+          <div class="pdf-modal-meta" id="pdf-modal-meta"></div>
+        </div>
+      </div>
+      <div class="pdf-modal-actions">
+        <a class="pdf-action-btn newwin" id="pdf-newwin-btn" href="#" target="_blank">↗ Open in New Tab</a>
+        <a class="pdf-action-btn download" id="pdf-download-btn" href="#" download>↓ Download</a>
+        <button class="pdf-close-btn" onclick="closePdfModal()">✕</button>
+      </div>
+    </div>
+    <div class="pdf-modal-toolbar">
+      <span class="pdf-type-badge" id="pdf-type-badge">PDF</span>
+      <span class="pdf-toolbar-hint" id="pdf-toolbar-hint">Use browser controls to zoom · scroll to navigate</span>
+    </div>
+    <div class="pdf-modal-body" id="pdf-modal-body">
+      <div class="pdf-loading" id="pdf-loading">
+        <div class="load-ring"></div>
+        <span>Loading document…</span>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
