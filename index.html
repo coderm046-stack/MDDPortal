@@ -10,7 +10,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, orderBy, query }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { getAuth, signOut, onAuthStateChanged }
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
   // ──────────────────────────────────────────────
@@ -43,6 +43,7 @@
   }
 
   window.FB = { auth, loadCollection, addItem, removeItem,
+    signIn:  (email, pass) => signInWithEmailAndPassword(auth, email, pass),
     signOut: () => signOut(auth),
     onAuth: (cb) => onAuthStateChanged(auth, cb)
   };
@@ -1044,16 +1045,22 @@ async function doLogin() {
   // ── Hardcoded admin credentials ──
   const ADMIN_EMAIL    = 'coderm046@gmail.com';
   const ADMIN_PASSWORD = 'Mdd_2485#';
-  await new Promise(r => setTimeout(r, 600)); // small delay for UX
-  if (email === ADMIN_EMAIL && pass === ADMIN_PASSWORD) {
-    window._loggedIn = true;
-    showDashboard(); toast('Welcome back! 👋');
-  } else {
+  if (email !== ADMIN_EMAIL || pass !== ADMIN_PASSWORD) {
     err.style.display = 'block';
+    btn.innerHTML = 'Sign In to Admin'; btn.disabled = false;
+    return;
   }
+  try {
+    await window.FB.signIn(email, pass);
+  } catch(e) {
+    console.warn('Firebase Auth sign-in skipped:', e.message);
+  }
+  window._loggedIn = true;
+  showDashboard(); toast('Welcome back! 👋');
   btn.innerHTML = 'Sign In to Admin'; btn.disabled = false;
 }
 async function doLogout() {
+  try { await window.FB.signOut(); } catch(e) { console.warn('Signout:', e.message); }
   window._loggedIn = false;
   showLoginScreen(); closeAdmin(); toast('Logged out.');
 }
@@ -1238,52 +1245,67 @@ async function loadAdminPlanning() {
 async function addVideo() {
   const t=document.getElementById('v-title').value.trim(), u=document.getElementById('v-url').value.trim(), s=document.getElementById('v-subject').value.trim();
   if(!t||!u){toast('Fill title and URL',false);return;}
-  await window.FB.addItem('videos',{title:t,url:u,subject:s});
-  ['v-title','v-url','v-subject'].forEach(id=>document.getElementById(id).value='');
-  toast('Video added! ✅'); loadAdminVideos(); loadPublicVideos();
+  try {
+    await window.FB.addItem('videos',{title:t,url:u,subject:s});
+    ['v-title','v-url','v-subject'].forEach(id=>document.getElementById(id).value='');
+    toast('Video added! ✅'); await loadAdminVideos(); loadPublicVideos();
+  } catch(e) { toast('Error saving: '+e.message, false); console.error(e); }
 }
 async function addBlog() {
   const t=document.getElementById('b-title').value.trim(), c=document.getElementById('b-content').value.trim(), g=document.getElementById('b-tags').value.trim();
   if(!t||!c){toast('Fill title and content',false);return;}
-  await window.FB.addItem('blog',{title:t,content:c,tags:g});
-  ['b-title','b-content','b-tags'].forEach(id=>document.getElementById(id).value='');
-  toast('Post published! ✅'); loadAdminBlog(); loadPublicBlog();
+  try {
+    await window.FB.addItem('blog',{title:t,content:c,tags:g});
+    ['b-title','b-content','b-tags'].forEach(id=>document.getElementById(id).value='');
+    toast('Post published! ✅'); await loadAdminBlog(); loadPublicBlog();
+  } catch(e) { toast('Error saving: '+e.message, false); console.error(e); }
 }
 async function addPaper() {
   const t=document.getElementById('p-title').value.trim(), u=document.getElementById('p-url').value.trim();
   if(!t||!u){toast('Fill title and link',false);return;}
-  await window.FB.addItem('papers',{title:t,cls:document.getElementById('p-class').value.trim(),
-    subject:document.getElementById('p-subject').value.trim(),year:document.getElementById('p-year').value.trim(),url:u});
-  ['p-title','p-class','p-subject','p-year','p-url'].forEach(id=>document.getElementById(id).value='');
-  toast('Paper added! ✅'); loadAdminPapers(); loadPublicPapers();
+  try {
+    await window.FB.addItem('papers',{title:t,cls:document.getElementById('p-class').value.trim(),
+      subject:document.getElementById('p-subject').value.trim(),year:document.getElementById('p-year').value.trim(),url:u});
+    ['p-title','p-class','p-subject','p-year','p-url'].forEach(id=>document.getElementById(id).value='');
+    toast('Paper added! ✅'); await loadAdminPapers(); loadPublicPapers();
+  } catch(e) { toast('Error saving: '+e.message, false); console.error(e); }
 }
 async function addMaterial() {
   const t=document.getElementById('m-title').value.trim(), u=document.getElementById('m-url').value.trim();
   if(!t||!u){toast('Fill title and link',false);return;}
-  await window.FB.addItem('material',{title:t,type:document.getElementById('m-type').value,
-    subject:document.getElementById('m-subject').value.trim(),desc:document.getElementById('m-desc').value.trim(),url:u});
-  ['m-title','m-subject','m-desc','m-url'].forEach(id=>document.getElementById(id).value='');
-  toast('Material added! ✅'); loadAdminMaterial(); loadPublicMaterial();
+  try {
+    await window.FB.addItem('material',{title:t,type:document.getElementById('m-type').value,
+      subject:document.getElementById('m-subject').value.trim(),desc:document.getElementById('m-desc').value.trim(),url:u});
+    ['m-title','m-subject','m-desc','m-url'].forEach(id=>document.getElementById(id).value='');
+    toast('Material added! ✅'); await loadAdminMaterial(); loadPublicMaterial();
+  } catch(e) { toast('Error saving: '+e.message, false); console.error(e); }
 }
 async function addSyllabus() {
   const t=document.getElementById('s-title').value.trim(), tp=document.getElementById('s-topics').value.trim();
   if(!t||!tp){toast('Fill title and topics',false);return;}
-  await window.FB.addItem('syllabus',{title:t,topics:tp});
-  ['s-title','s-topics'].forEach(id=>document.getElementById(id).value='');
-  toast('Unit added! ✅'); loadAdminSyllabus(); loadPublicSyllabus();
+  try {
+    await window.FB.addItem('syllabus',{title:t,topics:tp});
+    ['s-title','s-topics'].forEach(id=>document.getElementById(id).value='');
+    toast('Unit added! ✅'); await loadAdminSyllabus(); loadPublicSyllabus();
+  } catch(e) { toast('Error saving: '+e.message, false); console.error(e); }
 }
 async function addPlanning() {
   const m=document.getElementById('pl-month').value.trim(), tp=document.getElementById('pl-topics').value.trim();
   if(!m||!tp){toast('Fill month and topics',false);return;}
-  await window.FB.addItem('planning',{month:m,topics:tp,chapter:document.getElementById('pl-chapter').value.trim(),
-    status:document.getElementById('pl-status').value});
-  ['pl-month','pl-topics','pl-chapter'].forEach(id=>document.getElementById(id).value='');
-  toast('Entry added! ✅'); loadAdminPlanning(); loadPublicPlanning();
+  try {
+    await window.FB.addItem('planning',{month:m,topics:tp,chapter:document.getElementById('pl-chapter').value.trim(),
+      status:document.getElementById('pl-status').value});
+    ['pl-month','pl-topics','pl-chapter'].forEach(id=>document.getElementById(id).value='');
+    toast('Entry added! ✅'); await loadAdminPlanning(); loadPublicPlanning();
+  } catch(e) { toast('Error saving: '+e.message, false); console.error(e); }
 }
 
 async function delItem(col,id,rA,rP) {
   if(!confirm('Delete this item?')) return;
-  await window.FB.removeItem(col,id); toast('Deleted.'); rA(); rP();
+  try {
+    await window.FB.removeItem(col,id); toast('Deleted.');
+    await rA(); rP();
+  } catch(e) { toast('Error deleting: '+e.message, false); console.error(e); }
 }
 
 function toggleAcc(hdr){ hdr.parentElement.classList.toggle('open'); }
