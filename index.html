@@ -1556,16 +1556,20 @@ const CLOUDINARY_PRESET = 'mdd_portal'; // ← replace this
 function uploadToCloudinary(file, onProgress) {
   return new Promise((resolve, reject) => {
     if (CLOUDINARY_CLOUD === 'YOUR_CLOUD_NAME') {
-      reject(new Error('Cloudinary not configured yet — please add your Cloud Name and Upload Preset (see instructions in the code)'));
+      reject(new Error('Cloudinary not configured yet — add your Cloud Name and Upload Preset in the code'));
       return;
     }
+    // Decide resource_type:
+    // images → 'image' endpoint, everything else (PDF/doc/etc) → 'raw' endpoint
+    const isImage = /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(file.name);
+    const resourceType = isImage ? 'image' : 'raw';
+
     const fd = new FormData();
     fd.append('file', file);
     fd.append('upload_preset', CLOUDINARY_PRESET);
-    fd.append('resource_type', 'auto');
 
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload`);
+    xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/${resourceType}/upload`);
 
     xhr.upload.onprogress = e => {
       if (e.lengthComputable && onProgress) onProgress(Math.round(e.loaded / e.total * 100));
@@ -1574,10 +1578,10 @@ function uploadToCloudinary(file, onProgress) {
       try {
         const res = JSON.parse(xhr.responseText);
         if (res.secure_url) resolve(res.secure_url);
-        else reject(new Error(res.error?.message || 'Upload failed'));
+        else reject(new Error(res.error?.message || 'Upload failed — check your Cloud Name and Upload Preset are correct'));
       } catch(e) { reject(e); }
     };
-    xhr.onerror = () => reject(new Error('Network error during upload'));
+    xhr.onerror = () => reject(new Error('Network error — check internet connection and Cloudinary config'));
     xhr.send(fd);
   });
 }
@@ -1766,8 +1770,11 @@ function getFileType(url) {
   // Cloudinary — detect by domain, then by path/extension
   if (u.includes('res.cloudinary.com')) {
     if (u.includes('/image/upload/') || /\.(png|jpg|jpeg|gif|webp|svg)$/.test(u)) return 'image';
-    if (/\.(doc|docx|ppt|pptx|xls|xlsx)$/.test(u)) return 'office';
-    return 'pdf'; // raw/upload defaults to pdf viewer
+    if (/\.(doc|docx)$/.test(u)) return 'office';
+    if (/\.(ppt|pptx)$/.test(u)) return 'office';
+    if (/\.(xls|xlsx)$/.test(u)) return 'office';
+    // /raw/upload/ = PDF or other document
+    return 'pdf';
   }
   if (u.endsWith('.pdf')) return 'pdf';
   if (/\.(png|jpg|jpeg|gif|webp|svg)$/.test(u)) return 'image';
@@ -1777,23 +1784,30 @@ function getFileType(url) {
 
 function getEmbedUrl(url, type) {
   if (type === 'gdrive') {
-    // Convert Google Drive share links to embed/preview
     let id = null;
     const m1 = url.match(/\/file\/d\/([^\/]+)/);
     const m2 = url.match(/[?&]id=([^&]+)/);
     if (m1) id = m1[1];
     else if (m2) id = m2[1];
     if (id) return `https://drive.google.com/file/d/${id}/preview`;
-    // If already preview link, return as-is
     if (url.includes('/preview')) return url;
     return url;
   }
   if (type === 'pdf') {
-    // Cloudinary raw files: serve directly without hash params
-    if (url.includes('res.cloudinary.com')) return url;
+    // Cloudinary blocks iframe embedding via X-Frame-Options: SAMEORIGIN
+    // Fix: route through Google Docs Viewer which fetches it server-side
+    if (url.includes('res.cloudinary.com')) {
+      return `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+    }
     return url + '#toolbar=1&navpanes=1&scrollbar=1&view=FitH';
   }
-  if (type === 'office') return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`;
+  if (type === 'office') {
+    // Cloudinary office docs: also use Google Docs Viewer
+    if (url.includes('res.cloudinary.com')) {
+      return `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+    }
+    return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`;
+  }
   return url;
 }
 
@@ -1814,25 +1828,32 @@ function getDownloadUrl(url) {
   return url;
 }
 
-// Download any file cross-origin by fetching as blob
-async function triggerDownload(url, filename) {
+// Download any file — handles Cloudinary, Google Drive, and plain URLs
+function triggerDownload(url, filename) {
   const dlUrl = getDownloadUrl(url);
-  // Try fetch-blob first (works for Cloudinary fl_attachment, same-origin)
-  try {
-    const resp = await fetch(dlUrl, { mode: 'cors' });
-    if (resp.ok) {
-      const blob = await resp.blob();
+  if (url.includes('res.cloudinary.com')) {
+    // Cloudinary fl_attachment URL: browser receives Content-Disposition: attachment
+    // Opening in new tab triggers instant download (no CORS blob needed)
+    window.open(dlUrl, '_blank');
+    return;
+  }
+  if (url.includes('drive.google.com') || url.includes('docs.google.com')) {
+    // Google Drive export link opens download in new tab
+    window.open(dlUrl, '_blank');
+    return;
+  }
+  // For plain direct URLs: try fetch-blob for a named download
+  fetch(dlUrl)
+    .then(r => r.blob())
+    .then(blob => {
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = filename || 'download';
       document.body.appendChild(a);
       a.click();
       setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
-      return;
-    }
-  } catch(e) { /* fall through to new tab */ }
-  // Fallback: open in new tab (browser will download or show the file)
-  window.open(dlUrl, '_blank');
+    })
+    .catch(() => window.open(dlUrl, '_blank'));
 }
 
 function openPdfModal(url, title, meta) {
@@ -1861,7 +1882,7 @@ function openPdfModal(url, title, meta) {
   // Badge + icon + hint
   const typeMap = {
     gdrive: { label:'Google Drive', cls:'pdf', icon:'📄', hint:'Viewing via Google Drive preview' },
-    pdf:    { label:'PDF',          cls:'pdf', icon:'📕', hint:'Use browser controls to zoom · scroll to navigate' },
+    pdf:    { label:'PDF',          cls:'pdf', icon:'📕', hint:'Viewing via Google Docs · Use browser zoom to navigate' },
     image:  { label:'Image',        cls:'img', icon:'🖼️', hint:'Click and drag to pan · scroll to zoom (in new tab)' },
     office: { label:'Office Doc',   cls:'doc', icon:'📊', hint:'Viewing via Microsoft Office Online viewer' },
     other:  { label:'File',         cls:'other',icon:'📁', hint:'Preview not available for this file type' },
