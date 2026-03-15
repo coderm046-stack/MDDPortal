@@ -792,8 +792,6 @@ footer{background:var(--ink);color:#5a4534;text-align:center;padding:1.5rem;
 .mb-btn.tbl:hover  { background:#dbeafe; }
 .mb-btn.chart{ color:#059669;border-color:#a7f3d0; }
 .mb-btn.chart:hover{ background:#d1fae5; }
-.mb-btn.yt   { color:#dc2626;border-color:#fecaca; }
-.mb-btn.yt:hover   { background:#fee2e2; }
 .mb-btn.div  { color:#92400e;border-color:#fde68a; }
 .mb-btn.div:hover  { background:#fef3c7; }
 
@@ -811,6 +809,9 @@ footer{background:var(--ink);color:#5a4534;text-align:center;padding:1.5rem;
 }
 
 /* ════════════ MODAL OVERLAY (shared for table/chart/divider builders) ════════════ */
+
+/* Image size select custom toggle */
+#img-custom-wrap { transition: all .2s; }
 .blog-modal-overlay {
   display:none;position:fixed;inset:0;z-index:9000;
   background:rgba(0,0,0,.55);backdrop-filter:blur(4px);
@@ -1246,14 +1247,13 @@ footer{background:var(--ink);color:#5a4534;text-align:center;padding:1.5rem;
             <h3>+ Write New Post</h3>
             <div class="field"><label>Post Title</label><input id="b-title" placeholder="e.g. How to Tackle Board Exam Anxiety"></div>
             <div class="rich-editor-wrap">
-              <label>Content <span style="color:#0f766e;font-size:.65rem;letter-spacing:.05em;text-transform:none;font-weight:400;">— Text · Images · Tables · Charts · YouTube · Dividers</span></label>
+              <label>Content <span style="color:#0f766e;font-size:.65rem;letter-spacing:.05em;text-transform:none;font-weight:400;">— Text · Images · Tables · Charts · Dividers</span></label>
               <!-- Media toolbar -->
               <div class="blog-media-bar">
                 <span class="mb-label">Insert:</span>
                 <button type="button" class="mb-btn img"   onclick="blogInsertImage()">🖼️ Image</button>
                 <button type="button" class="mb-btn tbl"   onclick="blogOpenTableModal()">📋 Table</button>
                 <button type="button" class="mb-btn chart" onclick="blogOpenChartModal()">📊 Chart</button>
-                <button type="button" class="mb-btn yt"    onclick="blogOpenYouTubeModal()">▶️ YouTube</button>
                 <button type="button" class="mb-btn div"   onclick="blogInsertDivider()">— Divider</button>
               </div>
               <!-- Hidden file input for image upload -->
@@ -1586,8 +1586,8 @@ async function loadPublicPapers() {
     <td><strong>${p.title}</strong></td><td>${p.cls||''}</td><td>${p.subject||''}</td><td>${p.year||''}</td>
     <td>
       <div class="file-btns">
-        ${p.url?`<button class="btn-view-file" onclick="openPdfModal(${JSON.stringify(p.url)},${JSON.stringify(p.title)},${JSON.stringify(p.subject||'')})">👁 View</button>`:''}
-        ${p.url?`<button class="btn-dl-file" onclick="triggerDownload(${JSON.stringify(p.url)},${JSON.stringify(p.title||'paper')})">&#8595; Download</button>`:''}
+        ${p.url?`<a class="btn-view-file" href="${buildViewUrl(p.url)}" target="_blank" rel="noopener">View</a>`:''}
+        ${p.url?`<a class="btn-dl-file" href="${buildDlUrl(p.url)}" target="_blank" rel="noopener">Download</a>`:''}
       </div>
     </td>
   </tr>`).join('');
@@ -1641,8 +1641,8 @@ async function loadPublicMaterial() {
       <h4>${m.title}</h4>
       ${descHtml}
       ${m.url?`<div class="file-btns">
-        <button class="btn-view-file" onclick="openPdfModal(${JSON.stringify(m.url)},${JSON.stringify(m.title)},${JSON.stringify(m.type||'')})">👁 View</button>
-        <button class="btn-dl-file" onclick="triggerDownload(${JSON.stringify(m.url)},${JSON.stringify(m.title||'material')})">&#8595; Download</button>
+        <a class="btn-view-file" href="${buildViewUrl(m.url)}" target="_blank" rel="noopener">👁 View</a>
+        <a class="btn-dl-file" href="${buildDlUrl(m.url)}" target="_blank" rel="noopener">↓ Download</a>
       </div>`:''}
     </div>`;
   }).join('');
@@ -1801,22 +1801,50 @@ async function addVideo() {
 function blogGetEditor() { return window._qBlog; }
 
 function blogCloseModals() {
-  ['blog-table-modal','blog-chart-modal','blog-yt-modal'].forEach(function(id) {
+  ['blog-table-modal','blog-chart-modal'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.classList.remove('open');
   });
 }
 
-function blogInsertHTML(html) {
+function blogInsertHTML(htmlStr) {
   var q = blogGetEditor();
   if (!q) return;
   var range = q.getSelection(true);
   var idx = range ? range.index : q.getLength();
-  q.clipboard.dangerouslyPasteHTML(idx, html);
+  q.clipboard.dangerouslyPasteHTML(idx, htmlStr);
   q.setSelection(idx + 1);
 }
 
-// ── IMAGE UPLOAD ─────────────────────────────────────────
+// blogInsertDOM: writes HTML directly into the editor DOM — works for
+// elements that Quill strips (tables, complex divs, etc.)
+function blogInsertDOM(htmlStr) {
+  var q = blogGetEditor();
+  if (!q) return;
+  var editor = q.root; // the contenteditable .ql-editor div
+
+  // Create a temporary container to parse the HTML
+  var tmp = document.createElement('div');
+  tmp.innerHTML = htmlStr;
+
+  // Insert each child node at the end of the editor
+  // then add a blank paragraph so cursor stays after the element
+  Array.from(tmp.childNodes).forEach(function(node) {
+    editor.appendChild(node.cloneNode(true));
+  });
+
+  // Append a clean paragraph for continued typing
+  var p = document.createElement('p');
+  p.innerHTML = '<br>';
+  editor.appendChild(p);
+
+  // Move Quill cursor to end
+  q.setSelection(q.getLength(), 0);
+}
+
+// ── IMAGE UPLOAD (two-step: upload → options modal → insert) ─────────────────
+var _blogImgUrl = null;
+
 function blogInsertImage() {
   document.getElementById('blog-img-input').click();
 }
@@ -1826,35 +1854,82 @@ async function blogHandleImageUpload(input) {
   if (!file) return;
   if (file.size > 10 * 1024 * 1024) { toast('Image too large — max 10 MB', false); return; }
 
-  // Show progress in editor
-  var progressId = 'blog-img-prog-' + Date.now();
-  blogInsertHTML(
-    '<div id="' + progressId + '" class="blog-img-progress">' +
-    '<span>Uploading image...</span>' +
-    '<div class="bar-bg"><div class="bar-fill" id="' + progressId + '-bar" style="width:0%"></div></div>' +
-    '<span id="' + progressId + '-pct">0%</span></div>'
-  );
+  // Open modal immediately showing uploading state
+  var modal    = document.getElementById('blog-img-modal');
+  var preview  = document.getElementById('blog-img-preview');
+  var uploading= document.getElementById('blog-img-uploading');
+  var insertBtn= document.getElementById('img-insert-btn');
+  var caption  = document.getElementById('img-caption');
+
+  _blogImgUrl = null;
+  preview.style.display   = 'none';
+  uploading.style.display = 'block';
+  uploading.textContent   = 'Uploading... 0%';
+  insertBtn.disabled      = true;
+  caption.value           = '';
+  modal.classList.add('open');
+
+  // Show local preview immediately
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    preview.src           = e.target.result;
+    preview.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
 
   try {
     var url = await uploadToCloudinary(file, function(pct) {
-      var bar = document.getElementById(progressId + '-bar');
-      var pctEl = document.getElementById(progressId + '-pct');
-      if (bar) bar.style.width = pct + '%';
-      if (pctEl) pctEl.textContent = pct + '%';
+      uploading.textContent = 'Uploading... ' + pct + '%';
     });
-
-    // Remove progress div, insert image
-    var prog = document.getElementById(progressId);
-    if (prog) prog.remove();
-    blogInsertHTML('<img src="' + url + '" alt="' + (file.name || 'image') + '" style="max-width:100%;border-radius:8px;margin:.5rem 0;">');
-    toast('Image added! ✅');
+    _blogImgUrl             = url;
+    uploading.style.display = 'none';
+    preview.src             = url;
+    insertBtn.disabled      = false;
+    toast('Upload done — set options and click Insert Image');
   } catch(e) {
-    var prog = document.getElementById(progressId);
-    if (prog) prog.remove();
+    modal.classList.remove('open');
     toast('Image upload failed: ' + e.message, false);
   }
   input.value = '';
 }
+
+function blogInsertImageFinal() {
+  if (!_blogImgUrl) return;
+  var size    = document.getElementById('img-size').value;
+  var align   = document.getElementById('img-align').value;
+  var caption = document.getElementById('img-caption').value.trim();
+  var customPx= document.getElementById('img-custom-px').value;
+
+  var width = (size === 'custom') ? (customPx ? customPx + 'px' : '100%') : size;
+
+  // Build wrapper style based on alignment
+  var wrapStyle = 'display:block;margin:.6rem 0;';
+  var imgStyle  = 'width:' + width + ';border-radius:8px;box-shadow:0 3px 12px rgba(0,0,0,.15);';
+  if (align === 'center') {
+    wrapStyle += 'text-align:center;';
+  } else if (align === 'right') {
+    wrapStyle += 'text-align:right;';
+  }
+
+  var imgHtml =
+    '<div style="' + wrapStyle + '">' +
+    '<img src="' + _blogImgUrl + '" style="' + imgStyle + '" alt="image">' +
+    (caption ? '<p style="font-size:.75rem;color:#a07858;margin-top:.3rem;font-style:italic;">' + caption + '</p>' : '') +
+    '</div>';
+
+  blogInsertDOM(imgHtml);
+  blogCloseModals();
+  _blogImgUrl = null;
+  toast('Image inserted! ✅');
+}
+
+// Toggle custom size input
+document.addEventListener('change', function(e) {
+  if (e.target.id === 'img-size') {
+    document.getElementById('img-custom-wrap').style.display =
+      e.target.value === 'custom' ? 'block' : 'none';
+  }
+});
 
 // ── TABLE BUILDER ────────────────────────────────────────
 function blogOpenTableModal() {
@@ -1897,9 +1972,9 @@ function blogInsertTable() {
   }
   tbl += '</tbody></table><p><br></p>';
 
-  blogInsertHTML(tbl);
+  blogInsertDOM(tbl);
   blogCloseModals();
-  toast('Table inserted! Click cells to edit.', true);
+  toast('Table inserted! ✅', true);
 }
 
 // ── CHART BUILDER ────────────────────────────────────────
@@ -1969,7 +2044,7 @@ function blogInsertChart() {
     var canvas = document.getElementById('chart-preview-canvas');
     var imgData = canvas.toDataURL('image/png');
     var title   = document.getElementById('chart-title').value || 'Chart';
-    blogInsertHTML(
+    blogInsertDOM(
       '<div class="blog-chart-wrap">' +
       '<img src="' + imgData + '" alt="' + title + '" style="max-width:100%;border-radius:8px;">' +
       '<p style="font-size:.75rem;color:#a07858;text-align:center;margin-top:.3rem;">' + title + '</p>' +
@@ -1980,39 +2055,10 @@ function blogInsertChart() {
   }
 }
 
-// ── YOUTUBE EMBED ────────────────────────────────────────
-function blogOpenYouTubeModal() {
-  document.getElementById('blog-yt-modal').classList.add('open');
-}
-
-function blogInsertYouTube() {
-  var url     = document.getElementById('yt-url').value.trim();
-  var caption = document.getElementById('yt-caption').value.trim();
-  if (!url) { toast('Paste a YouTube link', false); return; }
-
-  var m = url.match(/(?:v=|youtu\.be\/)([^&?/]+)/);
-  if (!m) { toast('Could not find YouTube video ID in that link', false); return; }
-  var vid = m[1];
-  var embed = 'https://www.youtube.com/embed/' + vid;
-
-  blogInsertHTML(
-    '<div class="blog-video-wrap">' +
-    '<iframe src="' + embed + '" allow="accelerometer; autoplay; clipboard-write; ' +
-    'encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>' +
-    '</div>' +
-    (caption ? '<p style="font-size:.78rem;color:#a07858;text-align:center;margin-top:.3rem;">' + caption + '</p>' : '') +
-    '<p><br></p>'
-  );
-
-  document.getElementById('yt-url').value = '';
-  document.getElementById('yt-caption').value = '';
-  blogCloseModals();
-  toast('Video embedded! ✅');
-}
 
 // ── DIVIDER ──────────────────────────────────────────────
 function blogInsertDivider() {
-  blogInsertHTML('<div class="blog-divider">* * *</div><p><br></p>');
+  blogInsertDOM('<div class="blog-divider">* * *</div>');
 }
 
 // Close modals on backdrop click
@@ -2025,15 +2071,15 @@ document.addEventListener('keydown', function(e) {
 
 async function addBlog() {
   const t = document.getElementById('b-title').value.trim();
-  const c = window._qBlog ? window._qBlog.root.innerHTML : '';
+  const c = window._qBlog ? window._qBlog.root.innerHTML : document.querySelector('#b-content-editor .ql-editor') ? document.querySelector('#b-content-editor .ql-editor').innerHTML : '';
   const g = document.getElementById('b-tags').value.trim();
-  const isEmpty = window._qBlog ? window._qBlog.getText().trim() === '' : !c;
+  const isEmpty = !c || c.replace(/<[^>]*>/g,'').trim() === '';
   if(!t || isEmpty){toast('Fill title and content',false);return;}
   try {
     await window.FB.addItem('blog',{title:t,content:c,tags:g});
     document.getElementById('b-title').value='';
     document.getElementById('b-tags').value='';
-    if(window._qBlog) window._qBlog.setContents([]);
+    if(window._qBlog) { window._qBlog.setContents([]); var ed=document.querySelector('#b-content-editor .ql-editor'); if(ed) ed.innerHTML='<p><br></p>'; }
     toast('Post published! ✅'); await loadAdminBlog(); loadPublicBlog();
   } catch(e) { toast('Error saving: '+e.message, false); console.error(e); }
 }
@@ -2208,78 +2254,63 @@ function toggleAcc(hdr){ hdr.parentElement.classList.toggle('open'); }
 //  PDF VIEWER MODAL
 // ══════════════════════════════
 // ── Detect file type from URL ──────────────────────────────────────────────
-// ── File type detection ─────────────────────────────────────────────────────
-function getFileType(url) {
-  if (!url) return 'other';
-  const u = url.toLowerCase().split('?')[0];
-  if (u.includes('drive.google.com') || u.includes('docs.google.com')) return 'gdrive';
-  if (u.includes('res.cloudinary.com')) {
-    if (u.includes('/image/upload/') || /\.(png|jpg|jpeg|gif|webp|svg)$/.test(u)) return 'image';
-    if (/\.(doc|docx|ppt|pptx|xls|xlsx)$/.test(u)) return 'office';
-    return 'pdf';
-  }
-  if (/\.(pdf)$/i.test(u)) return 'pdf';
-  if (/\.(png|jpg|jpeg|gif|webp|svg)$/i.test(u)) return 'image';
-  if (/\.(doc|docx|ppt|pptx|xls|xlsx)$/i.test(u)) return 'office';
-  return 'other';
-}
-
-// ── Build the best view URL for each source ──────────────────────────────────
-function getViewUrl(url) {
-  if (!url) return url;
-  const type = getFileType(url);
-  // Google Drive — convert to native preview
-  if (type === 'gdrive') {
-    const m1 = url.match(/\/file\/d\/([^\/]+)/);
-    const m2 = url.match(/[?&]id=([^&]+)/);
-    const id  = m1 ? m1[1] : (m2 ? m2[1] : null);
+// ── Build view URL: opens cleanly in new tab ────────────────────────────────
+function buildViewUrl(url) {
+  if (!url) return '#';
+  url = url.trim().replace(/^["']+|["']+$/g, '');
+  if (url.includes('drive.google.com') || url.includes('docs.google.com')) {
+    var m1 = url.match(/\/file\/d\/([^/]+)/);
+    var m2 = url.match(/[?&]id=([^&]+)/);
+    var id  = m1 ? m1[1] : (m2 ? m2[1] : null);
     if (id) return 'https://drive.google.com/file/d/' + id + '/view';
-    return url;
   }
-  // Office files — Microsoft viewer
-  if (type === 'office') {
+  if (/\.(doc|docx|ppt|pptx|xls|xlsx)$/i.test(url.split('?')[0])) {
     return 'https://view.officeapps.live.com/op/view.aspx?src=' + encodeURIComponent(url);
   }
-  // Everything else (Cloudinary PDFs, plain PDFs, images) — direct URL
   return url;
 }
 
-// ── Build the best download URL ───────────────────────────────────────────────
-function getDownloadUrl(url) {
-  if (!url) return url;
-  // Cloudinary: add fl_attachment so browser gets Content-Disposition:attachment
+// ── Build download URL ────────────────────────────────────────────────────────
+function buildDlUrl(url) {
+  if (!url) return '#';
+  url = url.trim().replace(/^["']+|["']+$/g, '');
   if (url.includes('res.cloudinary.com')) {
     return url.replace('/upload/', '/upload/fl_attachment/');
   }
-  // Google Drive: export as download
   if (url.includes('drive.google.com') || url.includes('docs.google.com')) {
-    const m1 = url.match(/\/file\/d\/([^\/]+)/);
-    const m2 = url.match(/[?&]id=([^&]+)/);
-    const id  = m1 ? m1[1] : (m2 ? m2[1] : null);
+    var m1 = url.match(/\/file\/d\/([^/]+)/);
+    var m2 = url.match(/[?&]id=([^&]+)/);
+    var id  = m1 ? m1[1] : (m2 ? m2[1] : null);
     if (id) return 'https://drive.google.com/uc?export=download&id=' + id;
   }
   return url;
 }
 
-// ── Open view URL in new tab ──────────────────────────────────────────────────
-function viewFile(rawUrl) {
-  var url = sanitizeUrl(rawUrl);
-  window.open(getViewUrl(url), '_blank', 'noopener,noreferrer');
+// ── Sanitize URL ─────────────────────────────────────────────────────────────
+function sanitizeUrl(raw) {
+  if (!raw) return '';
+  var u = String(raw).trim().replace(/^["']+|["']+$/g, '');
+  var m = u.match(/https?:\/\/[^\s"'<>]+/i);
+  if (m) u = m[0];
+  return u.replace(/[.,)>\]]+$/, '');
 }
 
-// ── Trigger download in new tab ───────────────────────────────────────────────
+// ── triggerDownload: anchor click — never blocked ────────────────────────────
 function triggerDownload(rawUrl, filename) {
-  var url = sanitizeUrl(rawUrl);
-  window.open(getDownloadUrl(url), '_blank', 'noopener,noreferrer');
+  var url = buildDlUrl(sanitizeUrl(rawUrl));
+  var a   = document.createElement('a');
+  a.href  = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ a.remove(); }, 300);
 }
 
-// ── Open "preview" modal — shows file info + action buttons ──────────────────
-// (No iframe/embed — just a clean card with Open and Download buttons)
+// ── openPdfModal: action card with real <a> links ────────────────────────────
 function openPdfModal(rawUrl, title, meta) {
-  var url  = sanitizeUrl(rawUrl);
-  var type = getFileType(url);
-  var viewUrl  = getViewUrl(url);
-  var dlUrl    = getDownloadUrl(url);
+  var url     = sanitizeUrl(rawUrl);
+  var viewUrl = buildViewUrl(url);
+  var dlUrl   = buildDlUrl(url);
+  var isImage = /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(url.split('?')[0]) ||
+                (url.includes('res.cloudinary.com') && url.includes('/image/upload/'));
 
   var modal   = document.getElementById('pdf-modal');
   var body    = document.getElementById('pdf-modal-body');
@@ -2293,89 +2324,66 @@ function openPdfModal(rawUrl, title, meta) {
 
   titleEl.textContent = title || 'Document';
   metaEl.textContent  = meta  || '';
+  badge.textContent   = isImage ? 'Image' : 'Document';
+  badge.className     = isImage ? 'pdf-type-badge img' : 'pdf-type-badge pdf';
+  iconEl.textContent  = isImage ? 'IMG' : 'DOC';
+  hint.textContent    = 'Opens in a new tab';
 
-  var typeMap = {
-    gdrive: { label:'Google Drive', cls:'pdf',   icon:'📄' },
-    pdf:    { label:'PDF',          cls:'pdf',   icon:'📕' },
-    image:  { label:'Image',        cls:'img',   icon:'🖼️' },
-    office: { label:'Office Doc',   cls:'doc',   icon:'📊' },
-    other:  { label:'File',         cls:'other', icon:'📁' },
-  };
-  var info = typeMap[type] || typeMap.other;
-  badge.textContent   = info.label;
-  badge.className     = 'pdf-type-badge ' + info.cls;
-  iconEl.textContent  = info.icon;
-  hint.textContent    = 'Opens in a new tab on your browser';
+  nwBtn.href = viewUrl;
+  if (dlBtn.tagName === 'A') { dlBtn.href = dlUrl; dlBtn.target = '_blank'; dlBtn.rel = 'noopener'; }
+  else dlBtn.onclick = function(){ window.open(dlUrl, '_blank', 'noopener'); };
 
-  // Wire buttons
-  dlBtn.onclick = function() { triggerDownload(url, title || 'download'); };
-  nwBtn.href    = viewUrl;
-
-  // Body: image preview inline, everything else shows action card
   body.innerHTML = '';
   modal.classList.add('open');
   document.body.style.overflow = 'hidden';
 
-  if (type === 'image') {
-    // Images can be shown inline — no CORS issue
+  if (isImage) {
     var img = document.createElement('img');
-    img.className = 'preview-img';
-    img.src = url;
+    img.className = 'preview-img'; img.src = url;
     body.appendChild(img);
-
   } else {
-    // For all other file types: show a clean action card
-    // Opening in a new tab is the MOST RELIABLE approach across all browsers/devices
-    var typeLabel = {
-      pdf:    'PDF Document',
-      gdrive: 'Google Drive File',
-      office: 'Office Document',
-      other:  'File',
-    }[type] || 'File';
-
-    var tips = {
-      pdf:    'PDF opens in your browser built-in viewer.',
-      gdrive: 'Opens in Google Drive preview.',
-      office: 'Opens in Microsoft Office Online viewer.',
-      other:  'Download the file to open it.',
-    };
-
     body.innerHTML =
       '<div style="position:absolute;inset:0;display:flex;flex-direction:column;' +
-      'align-items:center;justify-content:center;gap:1.4rem;padding:2rem;' +
+      'align-items:center;justify-content:center;gap:1.6rem;padding:2rem;' +
       'background:linear-gradient(135deg,#0a0a18,#12122a);text-align:center;">' +
 
-      '<div style="width:72px;height:72px;border-radius:18px;display:flex;align-items:center;' +
-      'justify-content:center;font-size:2.2rem;' +
-      'background:linear-gradient(135deg,#e8610a,#f07d2a);box-shadow:0 8px 28px rgba(232,97,10,.4);">' +
-      info.icon + '</div>' +
+      '<div style="width:80px;height:80px;border-radius:20px;display:flex;' +
+      'align-items:center;justify-content:center;font-size:2.6rem;' +
+      'background:linear-gradient(135deg,#e8610a,#f07d2a);' +
+      'box-shadow:0 8px 32px rgba(232,97,10,.45);">PDF</div>' +
 
-      '<div>' +
-      '<p style="color:#fff;font-size:1rem;font-weight:700;font-family:Playfair Display,serif;margin-bottom:.3rem;">' +
+      '<div><p style="color:#fff;font-size:1.1rem;font-weight:700;' +
+      'font-family:Playfair Display,serif;margin-bottom:.4rem;">' +
       (title || 'Document') + '</p>' +
-      '<p style="color:rgba(255,255,255,.4);font-size:.78rem;">' + typeLabel + (meta ? ' &nbsp;·&nbsp; ' + meta : '') + '</p>' +
+      (meta ? '<p style="color:rgba(255,255,255,.4);font-size:.8rem;">' + meta + '</p>' : '') +
       '</div>' +
 
-      '<p style="color:rgba(255,255,255,.45);font-size:.82rem;max-width:300px;line-height:1.6;">' +
-      tips[type] + '</p>' +
+      '<div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;">' +
 
-      '<div style="display:flex;gap:.75rem;flex-wrap:wrap;justify-content:center;">' +
       '<a href="' + viewUrl + '" target="_blank" rel="noopener" ' +
-      'style="display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.6rem;' +
-      'border-radius:10px;font-size:.88rem;font-weight:700;text-decoration:none;' +
+      'style="display:inline-flex;align-items:center;gap:.6rem;padding:.9rem 2rem;' +
+      'border-radius:12px;font-size:.92rem;font-weight:700;text-decoration:none;' +
       'background:linear-gradient(135deg,#e8610a,#f07d2a);color:#fff;' +
-      'box-shadow:0 4px 16px rgba(232,97,10,.4);">' +
-      '<span style="font-size:1rem;">&#128065;</span> View File</a>' +
+      'box-shadow:0 6px 20px rgba(232,97,10,.45);">View File</a>' +
 
       '<a href="' + dlUrl + '" target="_blank" rel="noopener" ' +
-      'style="display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.6rem;' +
-      'border-radius:10px;font-size:.88rem;font-weight:700;text-decoration:none;' +
-      'background:rgba(255,255,255,.1);color:#fff;border:1.5px solid rgba(255,255,255,.2);">' +
-      '<span style="font-size:1rem;">&#8595;</span> Download</a>' +
+      'style="display:inline-flex;align-items:center;gap:.6rem;padding:.9rem 2rem;' +
+      'border-radius:12px;font-size:.92rem;font-weight:700;text-decoration:none;' +
+      'background:rgba(255,255,255,.12);color:#fff;' +
+      'border:1.5px solid rgba(255,255,255,.25);">Download</a>' +
+
       '</div>' +
 
+      '<p style="color:rgba(255,255,255,.3);font-size:.75rem;max-width:280px;line-height:1.6;">' +
+      'Opens in a new tab. Use browser back button to return.</p>' +
       '</div>';
   }
+}
+
+function closePdfModal() {
+  document.getElementById('pdf-modal').classList.remove('open');
+  document.body.style.overflow = '';
+  document.getElementById('pdf-modal-body').innerHTML = '';
 }
 
 
@@ -2404,7 +2412,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
       <div class="pdf-modal-actions">
         <a class="pdf-action-btn newwin" id="pdf-newwin-btn" href="#" target="_blank">↗ Open in New Tab</a>
-        <button class="pdf-action-btn download" id="pdf-download-btn" type="button">↓ Download</button>
+        <a class="pdf-action-btn download" id="pdf-download-btn" href="#" target="_blank" rel="noopener">↓ Download</a>
         <button class="pdf-close-btn" onclick="closePdfModal()">✕</button>
       </div>
     </div>
@@ -2490,6 +2498,54 @@ document.addEventListener('DOMContentLoaded', () => {
   );
 })();
 </script>
+
+<!-- ══════════════════════════════
+     BLOG IMAGE OPTIONS MODAL
+══════════════════════════════ -->
+<div class="blog-modal-overlay" id="blog-img-modal">
+  <div class="blog-modal-box">
+    <h3>🖼️ Image Options</h3>
+    <div id="blog-img-preview-wrap" style="text-align:center;margin-bottom:1rem;">
+      <img id="blog-img-preview" src="" alt="preview"
+        style="max-width:100%;max-height:160px;border-radius:8px;border:1.5px solid var(--border);display:none;">
+      <p id="blog-img-uploading" style="color:var(--muted);font-size:.82rem;padding:1rem 0;">Uploading image...</p>
+    </div>
+    <div class="bm-row">
+      <div class="bm-field">
+        <label>Width</label>
+        <select id="img-size">
+          <option value="25%">Small (25%)</option>
+          <option value="50%">Medium (50%)</option>
+          <option value="75%">Large (75%)</option>
+          <option value="100%" selected>Full width (100%)</option>
+          <option value="custom">Custom px...</option>
+        </select>
+      </div>
+      <div class="bm-field">
+        <label>Alignment</label>
+        <select id="img-align">
+          <option value="left">Left</option>
+          <option value="center" selected>Center</option>
+          <option value="right">Right</option>
+        </select>
+      </div>
+    </div>
+    <div class="bm-field" id="img-custom-wrap" style="display:none">
+      <label>Custom width (px)</label>
+      <input type="number" id="img-custom-px" placeholder="e.g. 300" min="50" max="1200">
+    </div>
+    <div class="bm-field">
+      <label>Caption (optional)</label>
+      <input type="text" id="img-caption" placeholder="e.g. Figure 1: Diagram of the water cycle">
+    </div>
+    <div class="bm-actions">
+      <button class="bm-btn-cancel" onclick="blogCloseModals()">Cancel</button>
+      <button class="bm-btn-insert" id="img-insert-btn" onclick="blogInsertImageFinal()" disabled>
+        Insert Image
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- ══════════════════════════════
      BLOG TABLE BUILDER MODAL
