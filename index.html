@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MDD Teacher Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -1872,20 +1872,11 @@ function getDownloadUrl(url) {
 // ── Trigger download — works across all browsers without popup blocking ──────
 // Uses <a> tag click (never blocked) instead of window.open (blocked by popup blocker)
 function triggerDownload(rawUrl, filename) {
-  const url   = sanitizeUrl(rawUrl);  // clean any corruption
+  const url   = sanitizeUrl(rawUrl);
   const dlUrl = getDownloadUrl(url);
-  const a = document.createElement('a');
-  a.href = dlUrl;
-  a.target = '_blank';
-  a.rel = 'noopener noreferrer';
-  // 'download' attribute only works same-origin, but href+target opens in new tab
-  // For Cloudinary fl_attachment URLs the browser shows Save dialog automatically
-  if (!url.includes('res.cloudinary.com') && !url.includes('drive.google.com')) {
-    a.download = filename || 'download';
-  }
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(() => a.remove(), 500);
+  // Always open in new tab — browser handles fl_attachment as Save dialog,
+  // Google Drive export as download, plain URLs as view/download
+  window.open(dlUrl, '_blank', 'noopener,noreferrer');
 }
 
 function openPdfModal(rawUrl, title, meta) {
@@ -1904,8 +1895,7 @@ function openPdfModal(rawUrl, title, meta) {
   // Set header info
   titleEl.textContent = title || 'Document';
   metaEl.textContent  = meta  || '';
-  dlBtn.href = '#';
-  dlBtn.onclick = (e) => { e.preventDefault(); triggerDownload(url, title || 'download'); };
+  dlBtn.onclick = () => triggerDownload(url, title || 'download');
   nwBtn.href = url;
 
   // Detect type
@@ -1997,7 +1987,7 @@ async function renderPdfJs(url, container, title) {
       const s = document.createElement('script');
       s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
       s.onload = res;
-      s.onerror = () => rej(new Error('PDF.js load failed'));
+      s.onerror = () => rej(new Error('PDF.js CDN load failed'));
       document.head.appendChild(s);
     });
     window.pdfjsLib.GlobalWorkerOptions.workerSrc =
@@ -2005,20 +1995,35 @@ async function renderPdfJs(url, container, title) {
   }
 
   try {
-    const pdf   = await window.pdfjsLib.getDocument({ url, withCredentials: false }).promise;
+    // disableRange + disableStream = simple GET with no Range headers
+    // This avoids the CORS preflight that Cloudinary blocks for Range requests
+    const loadTask = window.pdfjsLib.getDocument({
+      url              : url,
+      withCredentials  : false,
+      disableRange     : true,
+      disableStream    : true,
+      cMapUrl          : 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+      cMapPacked       : true,
+    });
+
+    const pdf   = await loadTask.promise;
     if (window._pdfAbort) return;
+
     const total = pdf.numPages;
 
+    // Build scrollable page container
     container.innerHTML = '';
     const wrap = document.createElement('div');
-    wrap.style.cssText = 'overflow-y:auto;height:100%;background:#111;padding:12px 8px;box-sizing:border-box;';
+    wrap.style.cssText = 'overflow-y:auto;height:100%;background:#1a1a1a;padding:16px 12px;box-sizing:border-box;';
 
-    const info = document.createElement('div');
-    info.style.cssText = 'text-align:center;color:rgba(255,255,255,.35);font-size:.75rem;margin-bottom:8px;';
-    info.textContent = total + ' page' + (total > 1 ? 's' : '');
-    wrap.appendChild(info);
+    const pageInfo = document.createElement('div');
+    pageInfo.style.cssText = 'text-align:center;color:rgba(255,255,255,.3);font-size:.72rem;' +
+                             'margin-bottom:10px;letter-spacing:.05em;';
+    pageInfo.textContent   = total + (total === 1 ? ' page' : ' pages');
+    wrap.appendChild(pageInfo);
     container.appendChild(wrap);
 
+    // Render each page
     for (let n = 1; n <= total; n++) {
       if (window._pdfAbort) return;
       const page     = await pdf.getPage(n);
@@ -2026,7 +2031,8 @@ async function renderPdfJs(url, container, title) {
       const canvas   = document.createElement('canvas');
       canvas.width   = viewport.width;
       canvas.height  = viewport.height;
-      canvas.style.cssText = 'display:block;margin:0 auto 10px;max-width:100%;border-radius:3px;box-shadow:0 2px 10px rgba(0,0,0,.6);';
+      canvas.style.cssText = 'display:block;margin:0 auto 12px;max-width:100%;' +
+                             'border-radius:4px;box-shadow:0 4px 16px rgba(0,0,0,.7);background:#fff;';
       await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
       if (window._pdfAbort) return;
       wrap.appendChild(canvas);
@@ -2034,20 +2040,45 @@ async function renderPdfJs(url, container, title) {
 
   } catch(err) {
     console.error('PDF.js error:', err);
-    const safeUrl   = (url||'').replace(/'/g,"\\'");
-    const safeTitle = (title||'document').replace(/'/g,"\\'");
-    container.innerHTML =
-      '<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;' +
-      'justify-content:center;gap:.9rem;color:rgba(255,255,255,.55);background:#0a0a18;text-align:center;padding:2rem;">' +
-      '<span style="font-size:3rem">📄</span>' +
-      '<p style="font-size:.95rem;color:rgba(255,255,255,.75);">Preview could not load.</p>' +
-      '<p style="font-size:.8rem;max-width:300px;">The file may still be processing. Wait a few seconds and try again, or download it directly.</p>' +
-      '<div style="display:flex;gap:.75rem;flex-wrap:wrap;justify-content:center;margin-top:.5rem;">' +
-      '<button class="pdf-action-btn download" onclick="triggerDownload(\'' + safeUrl + '\',\'' + safeTitle + '\')">↓ Download</button>' +
-      '<a class="pdf-action-btn newwin" href="' + (url||'#') + '" target="_blank" rel="noopener">↗ Open in New Tab</a>' +
-      '</div></div>';
+    // Fallback: try Google Docs Viewer inside the modal
+    showPdfFallback(container, url, title, err.message);
   }
 }
+
+function showPdfFallback(container, url, title, errMsg) {
+  var gdocsUrl = 'https://docs.google.com/viewer?url=' + encodeURIComponent(url) + '&embedded=true';
+  container.innerHTML = '';
+
+  var fallbackDiv = document.createElement('div');
+  fallbackDiv.style.cssText = 'position:absolute;inset:0;display:flex;flex-direction:column;' +
+    'align-items:center;justify-content:center;gap:1rem;background:#0a0a18;text-align:center;padding:2rem;';
+
+  var safeUrl   = (url   || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+  var safeTitle = (title || 'document').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
+  fallbackDiv.innerHTML = [
+    '<span style="font-size:2.5rem">\uD83D\uDCC4</span>',
+    '<p style="color:rgba(255,255,255,.8);font-size:.95rem;">Rendering PDF...</p>',
+    '<p style="color:rgba(255,255,255,.4);font-size:.75rem;max-width:320px;">',
+    'Loading via Google Docs Viewer. If blank, click Open in New Tab.</p>',
+    '<div style="display:flex;gap:.75rem;flex-wrap:wrap;justify-content:center;margin-top:.5rem;">',
+    '<button class="pdf-action-btn download" ',
+    'onclick="triggerDownload(\'' + safeUrl + '\',\'' + safeTitle + '\')">',
+    'Download</button>',
+    '<a class="pdf-action-btn newwin" href="' + (url || '#') + '" target="_blank" rel="noopener">',
+    'Open in New Tab</a>',
+    '</div>'
+  ].join('');
+
+  var iframe = document.createElement('iframe');
+  iframe.src = gdocsUrl;
+  iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;';
+  iframe.onload = function() { fallbackDiv.style.display = 'none'; };
+
+  container.appendChild(iframe);
+  container.appendChild(fallbackDiv);
+}
+
 
 // Close on backdrop click + Escape — wait for DOM
 document.addEventListener('DOMContentLoaded', () => {
@@ -2074,7 +2105,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
       <div class="pdf-modal-actions">
         <a class="pdf-action-btn newwin" id="pdf-newwin-btn" href="#" target="_blank">↗ Open in New Tab</a>
-        <a class="pdf-action-btn download" id="pdf-download-btn" href="#" download>↓ Download</a>
+        <button class="pdf-action-btn download" id="pdf-download-btn" type="button">↓ Download</button>
         <button class="pdf-close-btn" onclick="closePdfModal()">✕</button>
       </div>
     </div>
@@ -2092,39 +2123,72 @@ document.addEventListener('DOMContentLoaded', () => {
 </div>
 
 <!-- ══════════════════════════════
-     QUILL JS — loaded last so it is
-     guaranteed available when init runs
+     QUILL RICH TEXT EDITOR
+     Primary CDN: unpkg (reliable)
+     Fallback CDN: cdnjs
 ══════════════════════════════ -->
-<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/quill@1.3.7/dist/quill.snow.css">
 <script>
-(function initQuillEditors() {
-  const FULL_TB = [
-    [{ header: [1, 2, 3, false] }],
-    ['bold', 'italic', 'underline', 'strike'],
-    [{ color: [] }, { background: [] }],
-    [{ list: 'ordered' }, { list: 'bullet' }],
-    [{ indent: '-1' }, { indent: '+1' }],
-    [{ align: [] }],
-    ['blockquote', 'link'],
-    ['clean']
-  ];
-  const MINI_TB = [
-    ['bold', 'italic', 'underline'],
-    [{ list: 'ordered' }, { list: 'bullet' }],
-    [{ align: [] }],
-    ['link', 'clean']
-  ];
+// Load Quill JS dynamically with fallback CDN
+(function loadQuillThenInit() {
+  var PRIMARY  = 'https://unpkg.com/quill@1.3.7/dist/quill.min.js';
+  var FALLBACK = 'https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.min.js';
 
-  window._qBlog     = new Quill('#b-content-editor',  { theme:'snow', modules:{toolbar:FULL_TB}, placeholder:'Write your article here…' });
-  window._qSyllabus = new Quill('#s-topics-editor',   { theme:'snow', modules:{toolbar:FULL_TB}, placeholder:'Enter topics, sub-topics, notes with full formatting…' });
-  window._qMDesc    = new Quill('#m-desc-editor',     { theme:'snow', modules:{toolbar:MINI_TB}, placeholder:'Brief description of this material…' });
-  window._qPlanning = new Quill('#pl-topics-editor',  { theme:'snow', modules:{toolbar:MINI_TB}, placeholder:'Topics covered this month…' });
+  function initEditors() {
+    if (typeof Quill === 'undefined') {
+      console.error('Quill failed to load from all CDNs');
+      return;
+    }
+    var FULL_TB = [
+      [{ header: [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ color: [] }, { background: [] }],
+      [{ list: 'ordered' }, { list: 'bullet' }],
+      [{ indent: '-1' }, { indent: '+1' }],
+      [{ align: [] }],
+      ['blockquote', 'link'],
+      ['clean']
+    ];
+    var MINI_TB = [
+      ['bold', 'italic', 'underline'],
+      [{ list: 'ordered' }, { list: 'bullet' }],
+      [{ align: [] }],
+      ['link', 'clean']
+    ];
+    try {
+      window._qBlog     = new Quill('#b-content-editor',  { theme:'snow', modules:{toolbar:FULL_TB}, placeholder:'Write your article here...' });
+      window._qSyllabus = new Quill('#s-topics-editor',   { theme:'snow', modules:{toolbar:FULL_TB}, placeholder:'Enter topics, sub-topics, notes with full formatting...' });
+      window._qMDesc    = new Quill('#m-desc-editor',     { theme:'snow', modules:{toolbar:MINI_TB}, placeholder:'Brief description of this material...' });
+      window._qPlanning = new Quill('#pl-topics-editor',  { theme:'snow', modules:{toolbar:MINI_TB}, placeholder:'Topics covered this month...' });
+      ['#m-desc-editor .ql-editor', '#pl-topics-editor .ql-editor'].forEach(function(sel) {
+        var el = document.querySelector(sel);
+        if (el) el.style.minHeight = '80px';
+      });
+      console.log('Quill editors initialized');
+    } catch(e) {
+      console.error('Quill init error:', e);
+    }
+  }
 
-  // Shorter height for mini editors
-  ['#m-desc-editor .ql-editor', '#pl-topics-editor .ql-editor'].forEach(sel => {
-    const el = document.querySelector(sel);
-    if (el) el.style.minHeight = '80px';
-  });
+  function loadScript(src, onSuccess, onFail) {
+    var s = document.createElement('script');
+    s.src = src;
+    s.onload = onSuccess;
+    s.onerror = onFail;
+    document.head.appendChild(s);
+  }
+
+  // Try primary CDN, fall back to secondary if it fails
+  loadScript(PRIMARY,
+    function() { initEditors(); },
+    function() {
+      console.warn('Quill primary CDN failed, trying fallback...');
+      loadScript(FALLBACK,
+        function() { initEditors(); },
+        function() { console.error('Both Quill CDNs failed.'); }
+      );
+    }
+  );
 })();
 </script>
 </body>
