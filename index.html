@@ -1763,6 +1763,7 @@ function uploadToCloudinary(file, onProgress) {
     const fd = new FormData();
     fd.append('file', file);
     fd.append('upload_preset', CLOUDINARY_PRESET);
+    fd.append('folder', 'mdd_portal');  // store in our own folder, not restricted samples/
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/${resourceType}/upload`);
@@ -2255,9 +2256,21 @@ function toggleAcc(hdr){ hdr.parentElement.classList.toggle('open'); }
 // ══════════════════════════════
 // ── Detect file type from URL ──────────────────────────────────────────────
 // ── Build view URL: opens cleanly in new tab ────────────────────────────────
+// ── Clean Cloudinary URL — remove any restricted folder prefix ───────────────
+function cleanCloudinaryUrl(url) {
+  if (!url || !url.includes('res.cloudinary.com')) return url;
+  // Strip restricted "samples/ecommerce/" folder prefix from public_id part
+  // e.g. /raw/upload/v123/samples/ecommerce/file.pdf -> /raw/upload/v123/file.pdf
+  url = url.replace(/\/upload\/(v\d+\/)?samples\/ecommerce\//,
+                    function(m, v) { return '/upload/' + (v||''); });
+  url = url.replace(/\/upload\/(v\d+\/)?samples\//,
+                    function(m, v) { return '/upload/' + (v||''); });
+  return url;
+}
+
 function buildViewUrl(url) {
   if (!url) return '#';
-  url = url.trim().replace(/^["']+|["']+$/g, '');
+  url = cleanCloudinaryUrl(url.trim().replace(/^["']+|["']+$/g, ''));
   if (url.includes('drive.google.com') || url.includes('docs.google.com')) {
     var m1 = url.match(/\/file\/d\/([^/]+)/);
     var m2 = url.match(/[?&]id=([^&]+)/);
@@ -2273,8 +2286,9 @@ function buildViewUrl(url) {
 // ── Build download URL ────────────────────────────────────────────────────────
 function buildDlUrl(url) {
   if (!url) return '#';
-  url = url.trim().replace(/^["']+|["']+$/g, '');
+  url = cleanCloudinaryUrl(url.trim().replace(/^["']+|["']+$/g, ''));
   if (url.includes('res.cloudinary.com')) {
+    // fl_attachment forces Content-Disposition: attachment (download dialog)
     return url.replace('/upload/', '/upload/fl_attachment/');
   }
   if (url.includes('drive.google.com') || url.includes('docs.google.com')) {
