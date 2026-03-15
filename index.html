@@ -770,6 +770,134 @@ footer{background:var(--ink);color:#5a4534;text-align:center;padding:1.5rem;
 .acc-body .rich-content ul { list-style:disc; }
 .acc-body .rich-content ol { list-style:decimal; }
 
+/* ════════════ BLOG MEDIA TOOLBAR ════════════ */
+.blog-media-bar {
+  display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;
+  padding:.55rem .75rem;background:#f0fdf9;border:1.5px solid #99f6e4;
+  border-bottom:none;border-radius:8px 8px 0 0;
+}
+.blog-media-bar .mb-label {
+  font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:#0f766e;margin-right:.2rem;white-space:nowrap;
+}
+.mb-btn {
+  display:inline-flex;align-items:center;gap:.3rem;padding:.32rem .7rem;
+  font-size:.75rem;font-weight:700;border-radius:6px;cursor:pointer;border:1.5px solid;
+  transition:all .18s;white-space:nowrap;background:#fff;
+}
+.mb-btn:hover { transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,0,0,.12); }
+.mb-btn.img  { color:#7c3aed;border-color:#c4b5fd; }
+.mb-btn.img:hover  { background:#ede9fe; }
+.mb-btn.tbl  { color:#1d4ed8;border-color:#bfdbfe; }
+.mb-btn.tbl:hover  { background:#dbeafe; }
+.mb-btn.chart{ color:#059669;border-color:#a7f3d0; }
+.mb-btn.chart:hover{ background:#d1fae5; }
+.mb-btn.yt   { color:#dc2626;border-color:#fecaca; }
+.mb-btn.yt:hover   { background:#fee2e2; }
+.mb-btn.div  { color:#92400e;border-color:#fde68a; }
+.mb-btn.div:hover  { background:#fef3c7; }
+
+/* Media upload progress inside editor */
+.blog-img-progress {
+  display:flex;align-items:center;gap:.6rem;padding:.6rem .8rem;
+  background:#f0fdf9;border:1.5px solid #6ee7b7;border-radius:8px;margin:.4rem 0;
+  font-size:.8rem;color:#065f46;
+}
+.blog-img-progress .bar-bg {
+  flex:1;height:6px;background:#d1fae5;border-radius:100px;overflow:hidden;
+}
+.blog-img-progress .bar-fill {
+  height:100%;background:#059669;border-radius:100px;transition:width .2s;
+}
+
+/* ════════════ MODAL OVERLAY (shared for table/chart/divider builders) ════════════ */
+.blog-modal-overlay {
+  display:none;position:fixed;inset:0;z-index:9000;
+  background:rgba(0,0,0,.55);backdrop-filter:blur(4px);
+  align-items:center;justify-content:center;padding:1rem;
+}
+.blog-modal-overlay.open { display:flex; }
+.blog-modal-box {
+  background:#fff;border-radius:16px;padding:1.8rem;width:100%;max-width:520px;
+  box-shadow:0 20px 60px rgba(0,0,0,.25);max-height:90vh;overflow-y:auto;
+}
+.blog-modal-box h3 {
+  font-family:'Playfair Display',serif;color:var(--ink);font-size:1.2rem;
+  margin-bottom:1.2rem;display:flex;align-items:center;gap:.5rem;
+}
+.bm-field { margin-bottom:1rem; }
+.bm-field label {
+  display:block;font-size:.72rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink2);margin-bottom:.35rem;
+}
+.bm-field input, .bm-field select, .bm-field textarea {
+  width:100%;padding:.65rem .9rem;border:1.5px solid var(--border);
+  border-radius:8px;font-size:.88rem;color:var(--ink);outline:none;
+  font-family:'Plus Jakarta Sans',sans-serif;transition:border .2s;
+}
+.bm-field input:focus,.bm-field select:focus,.bm-field textarea:focus {
+  border-color:var(--orange);box-shadow:0 0 0 3px rgba(232,97,10,.1);
+}
+.bm-field textarea { resize:vertical;min-height:70px; }
+.bm-row { display:grid;grid-template-columns:1fr 1fr;gap:.75rem; }
+.bm-actions { display:flex;gap:.6rem;margin-top:1.4rem;justify-content:flex-end; }
+.bm-actions button {
+  padding:.55rem 1.3rem;border-radius:8px;font-size:.82rem;font-weight:700;
+  cursor:pointer;border:none;transition:all .18s;
+}
+.bm-btn-cancel { background:var(--border);color:var(--ink2); }
+.bm-btn-cancel:hover { background:var(--border2); }
+.bm-btn-insert { background:linear-gradient(135deg,var(--orange),var(--orange-mid));color:#fff; }
+.bm-btn-insert:hover { opacity:.9;transform:translateY(-1px); }
+
+/* Chart preview inside modal */
+#chart-preview-canvas { max-width:100%;margin:.8rem 0;border-radius:8px;border:1.5px solid var(--border); }
+
+/* ════════════ RICH CONTENT — images, tables, charts ════════════ */
+.rich-content img {
+  max-width:100%;height:auto;border-radius:8px;
+  margin:.6rem 0;box-shadow:0 4px 16px rgba(0,0,0,.12);display:block;
+}
+.rich-content table {
+  width:100%;border-collapse:collapse;margin:.8rem 0;
+  border-radius:8px;overflow:hidden;font-size:.86rem;
+}
+.rich-content table th {
+  background:linear-gradient(135deg,var(--orange),var(--orange-mid));
+  color:#fff;padding:.65rem 1rem;text-align:left;font-weight:700;font-size:.8rem;
+}
+.rich-content table td {
+  padding:.6rem 1rem;border-bottom:1px solid var(--border2);color:var(--ink2);
+}
+.rich-content table tr:last-child td { border-bottom:none; }
+.rich-content table tr:nth-child(even) td { background:var(--orange-dim); }
+.rich-content .blog-chart-wrap {
+  margin:.8rem 0;text-align:center;
+}
+.rich-content .blog-chart-wrap canvas {
+  max-width:100%;border-radius:8px;border:1px solid var(--border);
+}
+.rich-content .blog-divider {
+  display:flex;align-items:center;gap:.75rem;margin:1.2rem 0;color:var(--muted);
+  font-size:.78rem;font-style:italic;
+}
+.rich-content .blog-divider::before,.rich-content .blog-divider::after {
+  content:'';flex:1;height:1.5px;background:var(--border);
+}
+.rich-content .blog-video-wrap {
+  position:relative;padding-bottom:56.25%;height:0;overflow:hidden;
+  border-radius:10px;margin:.8rem 0;
+}
+.rich-content .blog-video-wrap iframe {
+  position:absolute;top:0;left:0;width:100%;height:100%;border:none;
+}
+/* Mobile: make blog images responsive */
+@media(max-width:768px) {
+  .rich-content table { font-size:.78rem; }
+  .rich-content table th, .rich-content table td { padding:.45rem .6rem; }
+}
+
+
 /* ════════════════════════════════════
    FILE UPLOAD UI
 ════════════════════════════════════ */
@@ -1118,9 +1246,21 @@ footer{background:var(--ink);color:#5a4534;text-align:center;padding:1.5rem;
             <h3>+ Write New Post</h3>
             <div class="field"><label>Post Title</label><input id="b-title" placeholder="e.g. How to Tackle Board Exam Anxiety"></div>
             <div class="rich-editor-wrap">
-              <label>Content <span style="color:#5eead4;font-size:.65rem;letter-spacing:.05em;text-transform:none;font-weight:400;">— Bold · Italic · Headings · Lists · Alignment · Links</span></label>
+              <label>Content <span style="color:#0f766e;font-size:.65rem;letter-spacing:.05em;text-transform:none;font-weight:400;">— Text · Images · Tables · Charts · YouTube · Dividers</span></label>
+              <!-- Media toolbar -->
+              <div class="blog-media-bar">
+                <span class="mb-label">Insert:</span>
+                <button type="button" class="mb-btn img"   onclick="blogInsertImage()">🖼️ Image</button>
+                <button type="button" class="mb-btn tbl"   onclick="blogOpenTableModal()">📋 Table</button>
+                <button type="button" class="mb-btn chart" onclick="blogOpenChartModal()">📊 Chart</button>
+                <button type="button" class="mb-btn yt"    onclick="blogOpenYouTubeModal()">▶️ YouTube</button>
+                <button type="button" class="mb-btn div"   onclick="blogInsertDivider()">— Divider</button>
+              </div>
+              <!-- Hidden file input for image upload -->
+              <input type="file" id="blog-img-input" accept="image/*" style="display:none"
+                onchange="blogHandleImageUpload(this)">
               <div id="b-content-editor"></div>
-              <span class="editor-hint">Use the toolbar above to format your article like MS Word</span>
+              <span class="editor-hint">Use the toolbar to format text. Use Insert buttons above to add images, tables, charts and more.</span>
             </div>
             <div class="field"><label>Tags (comma separated)</label><input id="b-tags" placeholder="e.g. Exam Tips, Class X"></div>
             <button class="btn btn-sm" onclick="addBlog()">Publish Post</button>
@@ -1652,6 +1792,237 @@ async function addVideo() {
     toast('Video added! ✅'); await loadAdminVideos(); loadPublicVideos();
   } catch(e) { toast('Error saving: '+e.message, false); console.error(e); }
 }
+
+// ════════════════════════════════════════════════════════
+//  BLOG MEDIA FUNCTIONS
+// ════════════════════════════════════════════════════════
+
+// ── Helpers ─────────────────────────────────────────────
+function blogGetEditor() { return window._qBlog; }
+
+function blogCloseModals() {
+  ['blog-table-modal','blog-chart-modal','blog-yt-modal'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.remove('open');
+  });
+}
+
+function blogInsertHTML(html) {
+  var q = blogGetEditor();
+  if (!q) return;
+  var range = q.getSelection(true);
+  var idx = range ? range.index : q.getLength();
+  q.clipboard.dangerouslyPasteHTML(idx, html);
+  q.setSelection(idx + 1);
+}
+
+// ── IMAGE UPLOAD ─────────────────────────────────────────
+function blogInsertImage() {
+  document.getElementById('blog-img-input').click();
+}
+
+async function blogHandleImageUpload(input) {
+  var file = input.files[0];
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) { toast('Image too large — max 10 MB', false); return; }
+
+  // Show progress in editor
+  var progressId = 'blog-img-prog-' + Date.now();
+  blogInsertHTML(
+    '<div id="' + progressId + '" class="blog-img-progress">' +
+    '<span>Uploading image...</span>' +
+    '<div class="bar-bg"><div class="bar-fill" id="' + progressId + '-bar" style="width:0%"></div></div>' +
+    '<span id="' + progressId + '-pct">0%</span></div>'
+  );
+
+  try {
+    var url = await uploadToCloudinary(file, function(pct) {
+      var bar = document.getElementById(progressId + '-bar');
+      var pctEl = document.getElementById(progressId + '-pct');
+      if (bar) bar.style.width = pct + '%';
+      if (pctEl) pctEl.textContent = pct + '%';
+    });
+
+    // Remove progress div, insert image
+    var prog = document.getElementById(progressId);
+    if (prog) prog.remove();
+    blogInsertHTML('<img src="' + url + '" alt="' + (file.name || 'image') + '" style="max-width:100%;border-radius:8px;margin:.5rem 0;">');
+    toast('Image added! ✅');
+  } catch(e) {
+    var prog = document.getElementById(progressId);
+    if (prog) prog.remove();
+    toast('Image upload failed: ' + e.message, false);
+  }
+  input.value = '';
+}
+
+// ── TABLE BUILDER ────────────────────────────────────────
+function blogOpenTableModal() {
+  document.getElementById('blog-table-modal').classList.add('open');
+}
+
+function blogInsertTable() {
+  var rows  = parseInt(document.getElementById('tbl-rows').value) || 3;
+  var cols  = parseInt(document.getElementById('tbl-cols').value) || 3;
+  var hdrs  = document.getElementById('tbl-headers').value.trim();
+  var style = document.getElementById('tbl-style').value;
+
+  var headerColors = {
+    orange: 'background:linear-gradient(135deg,#e8610a,#f07d2a);color:#fff;',
+    blue:   'background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;',
+    green:  'background:linear-gradient(135deg,#059669,#10b981);color:#fff;',
+    plain:  'background:#f8f8f8;color:#333;border-bottom:2px solid #ddd;',
+  };
+  var hStyle = headerColors[style] || headerColors.orange;
+  var headerList = hdrs ? hdrs.split(',').map(function(h){ return h.trim(); }) : [];
+
+  var tbl = '<table style="width:100%;border-collapse:collapse;margin:.8rem 0;border-radius:8px;overflow:hidden;">';
+
+  // Header row
+  tbl += '<thead><tr>';
+  for (var c = 0; c < cols; c++) {
+    var hText = headerList[c] || ('Column ' + (c+1));
+    tbl += '<th style="' + hStyle + 'padding:.65rem 1rem;text-align:left;font-size:.82rem;font-weight:700;">' + hText + '</th>';
+  }
+  tbl += '</tr></thead><tbody>';
+
+  // Data rows
+  for (var r = 0; r < rows; r++) {
+    var rowBg = (r % 2 === 0) ? 'background:#fff;' : 'background:#fdf8f4;';
+    tbl += '<tr>';
+    for (var cc = 0; cc < cols; cc++) {
+      tbl += '<td style="' + rowBg + 'padding:.6rem 1rem;border-bottom:1px solid #f0dece;color:#5c3d28;font-size:.86rem;" contenteditable="false">&nbsp;</td>';
+    }
+    tbl += '</tr>';
+  }
+  tbl += '</tbody></table><p><br></p>';
+
+  blogInsertHTML(tbl);
+  blogCloseModals();
+  toast('Table inserted! Click cells to edit.', true);
+}
+
+// ── CHART BUILDER ────────────────────────────────────────
+var _chartPreviewInstance = null;
+
+function blogOpenChartModal() {
+  document.getElementById('blog-chart-modal').classList.add('open');
+  setTimeout(blogUpdateChartPreview, 100);
+}
+
+function blogUpdateChartPreview() {
+  if (typeof Chart === 'undefined') {
+    // Load Chart.js if not loaded
+    var s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
+    s.onload = function() { blogUpdateChartPreview(); };
+    document.head.appendChild(s);
+    return;
+  }
+  var canvas = document.getElementById('chart-preview-canvas');
+  if (!canvas) return;
+
+  var type    = document.getElementById('chart-type').value;
+  var title   = document.getElementById('chart-title').value || 'Chart';
+  var rawLbls = document.getElementById('chart-labels').value;
+  var rawVals = document.getElementById('chart-values').value;
+  var labels  = rawLbls.split(',').map(function(l){ return l.trim(); });
+  var values  = rawVals.split(',').map(function(v){ return parseFloat(v.trim()) || 0; });
+
+  var colors = ['#e8610a','#f07d2a','#7c3aed','#059669','#1d4ed8','#d97706','#e11d48','#0d9488'];
+  var bgColors = type === 'bar' || type === 'line'
+    ? colors.slice(0, values.length).map(function(c){ return c + '33'; })
+    : colors.slice(0, values.length);
+
+  if (_chartPreviewInstance) { _chartPreviewInstance.destroy(); _chartPreviewInstance = null; }
+
+  _chartPreviewInstance = new Chart(canvas.getContext('2d'), {
+    type: type,
+    data: {
+      labels: labels,
+      datasets: [{
+        label: title,
+        data: values,
+        backgroundColor: bgColors,
+        borderColor: type === 'line' ? '#e8610a' : colors.slice(0, values.length),
+        borderWidth: 2,
+        fill: type === 'line',
+        tension: 0.4,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: type === 'pie' || type === 'doughnut' },
+        title:  { display: !!title, text: title },
+      },
+      scales: (type === 'pie' || type === 'doughnut') ? {} : {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+}
+
+function blogInsertChart() {
+  if (_chartPreviewInstance) {
+    // Capture chart as image and embed it
+    var canvas = document.getElementById('chart-preview-canvas');
+    var imgData = canvas.toDataURL('image/png');
+    var title   = document.getElementById('chart-title').value || 'Chart';
+    blogInsertHTML(
+      '<div class="blog-chart-wrap">' +
+      '<img src="' + imgData + '" alt="' + title + '" style="max-width:100%;border-radius:8px;">' +
+      '<p style="font-size:.75rem;color:#a07858;text-align:center;margin-top:.3rem;">' + title + '</p>' +
+      '</div><p><br></p>'
+    );
+    blogCloseModals();
+    toast('Chart inserted! ✅');
+  }
+}
+
+// ── YOUTUBE EMBED ────────────────────────────────────────
+function blogOpenYouTubeModal() {
+  document.getElementById('blog-yt-modal').classList.add('open');
+}
+
+function blogInsertYouTube() {
+  var url     = document.getElementById('yt-url').value.trim();
+  var caption = document.getElementById('yt-caption').value.trim();
+  if (!url) { toast('Paste a YouTube link', false); return; }
+
+  var m = url.match(/(?:v=|youtu\.be\/)([^&?/]+)/);
+  if (!m) { toast('Could not find YouTube video ID in that link', false); return; }
+  var vid = m[1];
+  var embed = 'https://www.youtube.com/embed/' + vid;
+
+  blogInsertHTML(
+    '<div class="blog-video-wrap">' +
+    '<iframe src="' + embed + '" allow="accelerometer; autoplay; clipboard-write; ' +
+    'encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>' +
+    '</div>' +
+    (caption ? '<p style="font-size:.78rem;color:#a07858;text-align:center;margin-top:.3rem;">' + caption + '</p>' : '') +
+    '<p><br></p>'
+  );
+
+  document.getElementById('yt-url').value = '';
+  document.getElementById('yt-caption').value = '';
+  blogCloseModals();
+  toast('Video embedded! ✅');
+}
+
+// ── DIVIDER ──────────────────────────────────────────────
+function blogInsertDivider() {
+  blogInsertHTML('<div class="blog-divider">* * *</div><p><br></p>');
+}
+
+// Close modals on backdrop click
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('blog-modal-overlay')) blogCloseModals();
+});
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') blogCloseModals();
+});
+
 async function addBlog() {
   const t = document.getElementById('b-title').value.trim();
   const c = window._qBlog ? window._qBlog.root.innerHTML : '';
@@ -2119,5 +2490,105 @@ document.addEventListener('DOMContentLoaded', () => {
   );
 })();
 </script>
+
+<!-- ══════════════════════════════
+     BLOG TABLE BUILDER MODAL
+══════════════════════════════ -->
+<div class="blog-modal-overlay" id="blog-table-modal">
+  <div class="blog-modal-box">
+    <h3>📋 Insert Table</h3>
+    <div class="bm-row">
+      <div class="bm-field">
+        <label>Rows</label>
+        <input type="number" id="tbl-rows" value="3" min="1" max="20">
+      </div>
+      <div class="bm-field">
+        <label>Columns</label>
+        <input type="number" id="tbl-cols" value="3" min="1" max="10">
+      </div>
+    </div>
+    <div class="bm-field">
+      <label>Header Row</label>
+      <input type="text" id="tbl-headers" placeholder="e.g. Name, Marks, Grade (comma separated)">
+    </div>
+    <div class="bm-field">
+      <label>Style</label>
+      <select id="tbl-style">
+        <option value="orange">Orange Header (default)</option>
+        <option value="blue">Blue Header</option>
+        <option value="green">Green Header</option>
+        <option value="plain">Plain / No colour</option>
+      </select>
+    </div>
+    <div class="bm-actions">
+      <button class="bm-btn-cancel" onclick="blogCloseModals()">Cancel</button>
+      <button class="bm-btn-insert" onclick="blogInsertTable()">Insert Table</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     BLOG CHART BUILDER MODAL
+══════════════════════════════ -->
+<div class="blog-modal-overlay" id="blog-chart-modal">
+  <div class="blog-modal-box">
+    <h3>📊 Insert Chart</h3>
+    <div class="bm-row">
+      <div class="bm-field">
+        <label>Chart Type</label>
+        <select id="chart-type" onchange="blogUpdateChartPreview()">
+          <option value="bar">Bar Chart</option>
+          <option value="line">Line Chart</option>
+          <option value="pie">Pie Chart</option>
+          <option value="doughnut">Doughnut Chart</option>
+        </select>
+      </div>
+      <div class="bm-field">
+        <label>Chart Title</label>
+        <input type="text" id="chart-title" placeholder="e.g. Monthly Test Scores"
+          oninput="blogUpdateChartPreview()">
+      </div>
+    </div>
+    <div class="bm-field">
+      <label>Labels (comma separated)</label>
+      <input type="text" id="chart-labels" value="Jan, Feb, Mar, Apr, May"
+        oninput="blogUpdateChartPreview()">
+    </div>
+    <div class="bm-field">
+      <label>Values (comma separated numbers)</label>
+      <input type="text" id="chart-values" value="85, 78, 92, 88, 95"
+        oninput="blogUpdateChartPreview()">
+    </div>
+    <div class="bm-field">
+      <label>Live Preview</label>
+      <canvas id="chart-preview-canvas" height="180"></canvas>
+    </div>
+    <div class="bm-actions">
+      <button class="bm-btn-cancel" onclick="blogCloseModals()">Cancel</button>
+      <button class="bm-btn-insert" onclick="blogInsertChart()">Insert Chart</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     BLOG YOUTUBE EMBED MODAL
+══════════════════════════════ -->
+<div class="blog-modal-overlay" id="blog-yt-modal">
+  <div class="blog-modal-box">
+    <h3>▶️ Embed YouTube Video</h3>
+    <div class="bm-field">
+      <label>YouTube Link</label>
+      <input type="text" id="yt-url" placeholder="https://youtube.com/watch?v=... or youtu.be/...">
+    </div>
+    <div class="bm-field">
+      <label>Caption (optional)</label>
+      <input type="text" id="yt-caption" placeholder="e.g. Chapter 5 Explanation Video">
+    </div>
+    <div class="bm-actions">
+      <button class="bm-btn-cancel" onclick="blogCloseModals()">Cancel</button>
+      <button class="bm-btn-insert" onclick="blogInsertYouTube()">Embed Video</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
