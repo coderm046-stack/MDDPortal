@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MDD Teacher Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -45,7 +46,7 @@
   window.FB = { auth, loadCollection, addItem, removeItem,
     signIn:  (email, pass) => signInWithEmailAndPassword(auth, email, pass),
     signOut: () => signOut(auth),
-    onAuth: (cb) => onAuthStateChanged(auth, cb)
+    onAuth:  (cb) => onAuthStateChanged(auth, cb)
   };
   window.dispatchEvent(new Event("fb-ready"));
 </script>
@@ -613,6 +614,204 @@ footer{background:var(--ink);color:#5a4534;text-align:center;padding:1.5rem;
   .admin-sidebar .s-logo,.sidebar-section,.sidebar-logout{width:100%;}
   .admin-main{padding:1.2rem;}
 }
+
+/* ════════════════════════════════════
+   QUILL RICH TEXT EDITOR — dark theme
+════════════════════════════════════ */
+.rich-editor-wrap { margin-bottom: 1.2rem; }
+.rich-editor-wrap label {
+  display:block;font-size:.72rem;color:var(--adm-muted);letter-spacing:.1em;
+  text-transform:uppercase;margin-bottom:.45rem;font-weight:600;
+}
+.rich-editor-wrap .editor-hint {
+  font-size:.68rem;color:var(--adm-muted);margin-top:.4rem;opacity:.7;
+}
+
+/* Quill toolbar */
+.ql-toolbar.ql-snow {
+  background: #1a0d04 !important;
+  border: 1.5px solid var(--adm-border) !important;
+  border-bottom: 1px solid var(--adm-border) !important;
+  border-radius: 10px 10px 0 0 !important;
+  padding: 6px 10px !important;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+.ql-toolbar.ql-snow .ql-formats {
+  margin-right: 6px;
+  border-right: 1px solid var(--adm-border);
+  padding-right: 6px;
+}
+.ql-toolbar.ql-snow .ql-formats:last-child { border-right: none; }
+.ql-toolbar.ql-snow button,
+.ql-toolbar.ql-snow .ql-picker-label {
+  color: var(--adm-muted) !important;
+  border-radius: 4px !important;
+  transition: background .15s, color .15s;
+}
+.ql-toolbar.ql-snow button:hover,
+.ql-toolbar.ql-snow .ql-picker-label:hover,
+.ql-toolbar.ql-snow button.ql-active,
+.ql-toolbar.ql-snow .ql-picker-label.ql-active {
+  background: rgba(232,97,10,.18) !important;
+  color: var(--orange) !important;
+}
+.ql-toolbar.ql-snow button svg,
+.ql-toolbar.ql-snow .ql-picker-label svg { color: inherit; }
+.ql-toolbar.ql-snow .ql-stroke { stroke: currentColor !important; }
+.ql-toolbar.ql-snow .ql-fill  { fill:   currentColor !important; }
+.ql-toolbar.ql-snow .ql-picker-options {
+  background: var(--adm-srf2) !important;
+  border: 1px solid var(--adm-border) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.4) !important;
+}
+.ql-toolbar.ql-snow .ql-picker-item { color: var(--adm-text) !important; }
+.ql-toolbar.ql-snow .ql-picker-item:hover { color: var(--orange) !important; background: rgba(232,97,10,.1) !important; }
+/* Quill editor body */
+.ql-container.ql-snow {
+  background: var(--adm-bg) !important;
+  border: 1.5px solid var(--adm-border) !important;
+  border-top: none !important;
+  border-radius: 0 0 10px 10px !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: .9rem !important;
+  color: var(--adm-text) !important;
+  min-height: 160px;
+}
+.ql-container.ql-snow.ql-sm { min-height: 90px; }
+.ql-editor { min-height: inherit; padding: .85rem 1rem; color: var(--adm-text) !important; line-height: 1.7; }
+.ql-editor.ql-blank::before { color: var(--adm-muted) !important; font-style: normal !important; }
+.ql-editor h1,.ql-editor h2,.ql-editor h3 { color: #fff; font-family: 'Playfair Display', serif; margin: .6rem 0 .3rem; }
+.ql-editor strong { color: #fff; }
+.ql-editor a { color: var(--orange-mid) !important; }
+.ql-editor blockquote {
+  border-left: 3px solid var(--orange) !important;
+  margin: .5rem 0; padding-left: 1rem;
+  color: var(--adm-muted) !important;
+  font-style: italic;
+}
+.ql-editor ul, .ql-editor ol { padding-left: 1.5rem; }
+.ql-editor li { padding: .15rem 0; }
+.ql-editor code { background: rgba(232,97,10,.1); padding: .1rem .35rem; border-radius: 4px; font-size: .85em; }
+/* Focus glow */
+.ql-container.ql-snow:focus-within {
+  border-color: var(--orange) !important;
+  box-shadow: 0 0 0 3px rgba(232,97,10,.15) !important;
+}
+
+/* Per-panel Quill accent colours */
+#blog-panel     .ql-container.ql-snow:focus-within,
+#blog-panel     .ql-toolbar.ql-snow { border-color:#0d9488 !important; }
+#blog-panel     .ql-container.ql-snow:focus-within { box-shadow: 0 0 0 3px rgba(13,148,136,.15) !important; }
+#blog-panel     .ql-toolbar.ql-snow button:hover, #blog-panel .ql-toolbar.ql-snow button.ql-active { background:rgba(13,148,136,.2)!important; color:#5eead4!important; }
+
+#syllabus-panel .ql-container.ql-snow:focus-within,
+#syllabus-panel .ql-toolbar.ql-snow { border-color:#e11d48 !important; }
+#syllabus-panel .ql-container.ql-snow:focus-within { box-shadow: 0 0 0 3px rgba(225,29,72,.15) !important; }
+#syllabus-panel .ql-toolbar.ql-snow button:hover, #syllabus-panel .ql-toolbar.ql-snow button.ql-active { background:rgba(225,29,72,.2)!important; color:#fda4af!important; }
+
+#material-panel .ql-container.ql-snow:focus-within,
+#material-panel .ql-toolbar.ql-snow { border-color:#059669 !important; }
+#material-panel .ql-container.ql-snow:focus-within { box-shadow: 0 0 0 3px rgba(5,150,105,.15) !important; }
+#material-panel .ql-toolbar.ql-snow button:hover, #material-panel .ql-toolbar.ql-snow button.ql-active { background:rgba(5,150,105,.2)!important; color:#6ee7b7!important; }
+
+#planning-panel .ql-container.ql-snow:focus-within,
+#planning-panel .ql-toolbar.ql-snow { border-color:#d97706 !important; }
+#planning-panel .ql-container.ql-snow:focus-within { box-shadow: 0 0 0 3px rgba(217,119,6,.15) !important; }
+#planning-panel .ql-toolbar.ql-snow button:hover, #planning-panel .ql-toolbar.ql-snow button.ql-active { background:rgba(217,119,6,.2)!important; color:#fcd34d!important; }
+
+/* ════════════════════════════════════
+   RICH CONTENT — public display
+════════════════════════════════════ */
+.rich-content { font-size:.88rem; color:var(--ink2); line-height:1.75; }
+.rich-content h1 { font-family:'Playfair Display',serif; font-size:1.4rem; color:var(--ink); margin:.6rem 0 .3rem; }
+.rich-content h2 { font-family:'Playfair Display',serif; font-size:1.15rem; color:var(--ink); margin:.5rem 0 .25rem; }
+.rich-content h3 { font-family:'Playfair Display',serif; font-size:1rem; color:var(--ink); margin:.4rem 0 .2rem; }
+.rich-content strong { color:var(--ink); font-weight:700; }
+.rich-content em { color:var(--deep); }
+.rich-content a { color:var(--orange); }
+.rich-content ul, .rich-content ol { padding-left:1.5rem; margin:.4rem 0; }
+.rich-content li { padding:.2rem 0; }
+.rich-content blockquote {
+  border-left:3px solid var(--orange); padding-left:1rem; margin:.5rem 0;
+  color:var(--muted); font-style:italic;
+}
+.rich-content p { margin-bottom:.4rem; }
+.acc-body .rich-content { color:var(--ink2); }
+.acc-body .rich-content ul { list-style:disc; }
+.acc-body .rich-content ol { list-style:decimal; }
+
+/* ════════════════════════════════════
+   FILE UPLOAD UI
+════════════════════════════════════ */
+/* Source toggle tabs */
+.src-tabs { display:flex; gap:0; margin-bottom:.75rem; border-radius:8px; overflow:hidden;
+  border:1.5px solid var(--adm-border); width:fit-content; }
+.src-tab { padding:.42rem 1.1rem; font-size:.75rem; font-weight:700; letter-spacing:.05em;
+  cursor:pointer; transition:all .18s; color:var(--adm-muted); background:var(--adm-bg);
+  border:none; display:flex; align-items:center; gap:.4rem; user-select:none; }
+.src-tab:first-child { border-right:1.5px solid var(--adm-border); }
+.src-tab.active { background:var(--orange); color:#fff; }
+.src-tab:hover:not(.active) { background:var(--adm-srf2); color:var(--adm-text); }
+
+/* Per-panel tab active colours */
+#papers-panel   .src-tab.active { background:#2563eb; }
+#material-panel .src-tab.active { background:#059669; }
+
+/* Drop zone */
+.drop-zone {
+  border:2px dashed var(--adm-border); border-radius:10px;
+  padding:1.6rem 1rem; text-align:center; cursor:pointer;
+  transition:all .2s; background:var(--adm-bg); position:relative;
+}
+.drop-zone:hover, .drop-zone.drag-over {
+  border-color:var(--orange); background:rgba(232,97,10,.06);
+}
+.drop-zone input[type=file] {
+  position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;
+}
+.drop-zone-icon { font-size:2rem; display:block; margin-bottom:.5rem; opacity:.6; }
+.drop-zone-text { font-size:.82rem; color:var(--adm-muted); line-height:1.6; }
+.drop-zone-text strong { color:var(--orange); }
+.drop-zone-file-name {
+  margin-top:.6rem; font-size:.8rem; color:var(--adm-text); font-weight:600;
+  background:rgba(232,97,10,.1); padding:.3rem .8rem; border-radius:6px;
+  display:inline-block; max-width:90%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+/* Per-panel drop zone colours */
+#papers-panel   .drop-zone:hover, #papers-panel   .drop-zone.drag-over { border-color:#2563eb; background:rgba(37,99,235,.06); }
+#papers-panel   .drop-zone-text strong { color:#93c5fd; }
+#papers-panel   .drop-zone-file-name   { background:rgba(37,99,235,.12); }
+#material-panel .drop-zone:hover, #material-panel .drop-zone.drag-over { border-color:#059669; background:rgba(5,150,105,.06); }
+#material-panel .drop-zone-text strong { color:#6ee7b7; }
+#material-panel .drop-zone-file-name   { background:rgba(5,150,105,.12); }
+
+/* Upload progress bar */
+.upload-progress-wrap { margin-top:.75rem; display:none; }
+.upload-progress-wrap.show { display:block; }
+.upload-progress-bar-bg {
+  background:var(--adm-border); border-radius:100px; height:6px; overflow:hidden;
+}
+.upload-progress-bar-fill {
+  height:100%; border-radius:100px; width:0%;
+  background:linear-gradient(90deg, var(--orange), var(--orange-mid));
+  transition:width .2s;
+}
+#papers-panel   .upload-progress-bar-fill { background:linear-gradient(90deg,#2563eb,#6366f1); }
+#material-panel .upload-progress-bar-fill { background:linear-gradient(90deg,#059669,#10b981); }
+.upload-progress-label {
+  font-size:.72rem; color:var(--adm-muted); margin-top:.3rem; display:flex;
+  justify-content:space-between; align-items:center;
+}
+.upload-progress-label span { color:var(--orange); font-weight:700; }
+#papers-panel   .upload-progress-label span { color:#93c5fd; }
+#material-panel .upload-progress-label span { color:#6ee7b7; }
+
+/* URL source section */
+.url-source { display:none; }
+.url-source.show { display:block; }
 </style>
 </head>
 <body>
@@ -891,7 +1090,11 @@ footer{background:var(--ink);color:#5a4534;text-align:center;padding:1.5rem;
           <div class="add-form">
             <h3>+ Write New Post</h3>
             <div class="field"><label>Post Title</label><input id="b-title" placeholder="e.g. How to Tackle Board Exam Anxiety"></div>
-            <div class="field"><label>Content</label><textarea id="b-content" placeholder="Write your article here..."></textarea></div>
+            <div class="rich-editor-wrap">
+              <label>Content <span style="color:#5eead4;font-size:.65rem;letter-spacing:.05em;text-transform:none;font-weight:400;">— Bold · Italic · Headings · Lists · Alignment · Links</span></label>
+              <div id="b-content-editor"></div>
+              <span class="editor-hint">Use the toolbar above to format your article like MS Word</span>
+            </div>
             <div class="field"><label>Tags (comma separated)</label><input id="b-tags" placeholder="e.g. Exam Tips, Class X"></div>
             <button class="btn btn-sm" onclick="addBlog()">Publish Post</button>
           </div>
@@ -902,7 +1105,7 @@ footer{background:var(--ink);color:#5a4534;text-align:center;padding:1.5rem;
         <!-- PAPERS -->
         <div class="admin-panel" id="papers-panel">
           <h2>📝 Question Papers</h2>
-          <p class="panel-desc">Add papers with Google Drive or Dropbox download links.</p>
+          <p class="panel-desc">Upload from your device or paste a Google Drive / Dropbox link.</p>
           <div class="add-form">
             <h3>+ Add Paper</h3>
             <div class="field"><label>Paper Title</label><input id="p-title" placeholder="e.g. Board Exam Paper 2024 — Set A"></div>
@@ -910,10 +1113,45 @@ footer{background:var(--ink);color:#5a4534;text-align:center;padding:1.5rem;
               <div class="field"><label>Class</label><input id="p-class" placeholder="e.g. Class X"></div>
               <div class="field"><label>Subject</label><input id="p-subject" placeholder="e.g. Mathematics"></div>
             </div>
-            <div class="form-row">
-              <div class="field"><label>Year</label><input id="p-year" placeholder="e.g. 2024"></div>
-              <div class="field"><label>PDF Download Link</label><input id="p-url" placeholder="https://drive.google.com/..."></div>
+            <div class="field"><label>Year</label><input id="p-year" placeholder="e.g. 2024" style="max-width:180px"></div>
+
+            <!-- File source toggle -->
+            <div style="margin-bottom:.5rem">
+              <label style="display:block;font-size:.72rem;color:var(--adm-muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.6rem;font-weight:600;">File / PDF</label>
+              <div class="src-tabs">
+                <button class="src-tab active" onclick="srcSwitch('p','upload',this)">📎 Upload from Device</button>
+                <button class="src-tab"        onclick="srcSwitch('p','link',this)">🔗 Paste Link</button>
+              </div>
             </div>
+
+            <!-- Upload zone (default shown) -->
+            <div id="p-upload-zone-wrap">
+              <div class="drop-zone" id="p-drop-zone"
+                ondragover="dzDragOver(event,'p-drop-zone')"
+                ondragleave="dzDragLeave('p-drop-zone')"
+                ondrop="dzDrop(event,'p-file-input','p-drop-zone','p-file-name')">
+                <input type="file" id="p-file-input" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png"
+                  onchange="dzPick(this,'p-file-name')">
+                <span class="drop-zone-icon">📄</span>
+                <div class="drop-zone-text">
+                  <strong>Click to browse</strong> or drag &amp; drop your file here<br>
+                  <small>PDF, Word, PPT, Excel, Images supported · Max 20 MB</small>
+                </div>
+                <div class="drop-zone-file-name" id="p-file-name" style="display:none"></div>
+              </div>
+              <div class="upload-progress-wrap" id="p-progress-wrap">
+                <div class="upload-progress-bar-bg"><div class="upload-progress-bar-fill" id="p-progress-fill"></div></div>
+                <div class="upload-progress-label">Uploading… <span id="p-progress-pct">0%</span></div>
+              </div>
+            </div>
+
+            <!-- Link input (hidden by default) -->
+            <div class="url-source" id="p-link-wrap">
+              <div class="field" style="margin-bottom:0"><label style="margin-bottom:.4rem">PDF / File Link</label>
+                <input id="p-url" placeholder="https://drive.google.com/... or any direct link"></div>
+            </div>
+
+            <br>
             <button class="btn btn-sm" onclick="addPaper()">Add Paper</button>
           </div>
           <span class="items-label">Uploaded Papers</span>
@@ -939,8 +1177,48 @@ footer{background:var(--ink);color:#5a4534;text-align:center;padding:1.5rem;
               </div>
               <div class="field"><label>Subject / Class</label><input id="m-subject" placeholder="e.g. Class X · Maths"></div>
             </div>
-            <div class="field"><label>Description</label><input id="m-desc" placeholder="Brief description of this material"></div>
-            <div class="field"><label>Download Link</label><input id="m-url" placeholder="https://drive.google.com/..."></div>
+            <div class="rich-editor-wrap">
+              <label>Description <span style="color:#6ee7b7;font-size:.65rem;letter-spacing:.05em;text-transform:none;font-weight:400;">— Bold · Italic · Lists · Links</span></label>
+              <div id="m-desc-editor"></div>
+            </div>
+
+            <!-- File source toggle -->
+            <div style="margin-bottom:.5rem">
+              <label style="display:block;font-size:.72rem;color:var(--adm-muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.6rem;font-weight:600;">File / Document</label>
+              <div class="src-tabs">
+                <button class="src-tab active" onclick="srcSwitch('m','upload',this)">📎 Upload from Device</button>
+                <button class="src-tab"        onclick="srcSwitch('m','link',this)">🔗 Paste Link</button>
+              </div>
+            </div>
+
+            <!-- Upload zone (default shown) -->
+            <div id="m-upload-zone-wrap">
+              <div class="drop-zone" id="m-drop-zone"
+                ondragover="dzDragOver(event,'m-drop-zone')"
+                ondragleave="dzDragLeave('m-drop-zone')"
+                ondrop="dzDrop(event,'m-file-input','m-drop-zone','m-file-name')">
+                <input type="file" id="m-file-input" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.zip"
+                  onchange="dzPick(this,'m-file-name')">
+                <span class="drop-zone-icon">📂</span>
+                <div class="drop-zone-text">
+                  <strong>Click to browse</strong> or drag &amp; drop your file here<br>
+                  <small>PDF, Word, PPT, Excel, Images, ZIP · Max 20 MB</small>
+                </div>
+                <div class="drop-zone-file-name" id="m-file-name" style="display:none"></div>
+              </div>
+              <div class="upload-progress-wrap" id="m-progress-wrap">
+                <div class="upload-progress-bar-bg"><div class="upload-progress-bar-fill" id="m-progress-fill"></div></div>
+                <div class="upload-progress-label">Uploading… <span id="m-progress-pct">0%</span></div>
+              </div>
+            </div>
+
+            <!-- Link input (hidden by default) -->
+            <div class="url-source" id="m-link-wrap">
+              <div class="field" style="margin-bottom:0"><label style="margin-bottom:.4rem">File / Download Link</label>
+                <input id="m-url" placeholder="https://drive.google.com/... or any direct link"></div>
+            </div>
+
+            <br>
             <button class="btn btn-sm" onclick="addMaterial()">Add Material</button>
           </div>
           <span class="items-label">Saved Materials</span>
@@ -954,7 +1232,11 @@ footer{background:var(--ink);color:#5a4534;text-align:center;padding:1.5rem;
           <div class="add-form">
             <h3>+ Add Unit</h3>
             <div class="field"><label>Unit / Chapter Title</label><input id="s-title" placeholder="e.g. Unit 1: Number Systems"></div>
-            <div class="field"><label>Topics (one per line)</label><textarea id="s-topics" placeholder="Real Numbers — Euclid's Division Lemma&#10;Fundamental Theorem of Arithmetic&#10;Irrational Numbers"></textarea></div>
+            <div class="rich-editor-wrap">
+              <label>Topics &amp; Content <span style="color:#fda4af;font-size:.65rem;letter-spacing:.05em;text-transform:none;font-weight:400;">— Headings · Bold · Bullets · Numbers · Alignment · Diagrams via Link</span></label>
+              <div id="s-topics-editor"></div>
+              <span class="editor-hint">Full MS Word-style editor — use headings, bullets, numbered lists, bold, italic, alignment and more</span>
+            </div>
             <button class="btn btn-sm" onclick="addSyllabus()">Add Unit</button>
           </div>
           <span class="items-label">Saved Units</span>
@@ -971,7 +1253,10 @@ footer{background:var(--ink);color:#5a4534;text-align:center;padding:1.5rem;
               <div class="field"><label>Month</label><input id="pl-month" placeholder="e.g. June"></div>
               <div class="field"><label>Chapter(s)</label><input id="pl-chapter" placeholder="e.g. Ch. 1–2"></div>
             </div>
-            <div class="field"><label>Topics Covered</label><input id="pl-topics" placeholder="e.g. Real Numbers, Polynomials"></div>
+            <div class="rich-editor-wrap">
+              <label>Topics Covered <span style="color:#fcd34d;font-size:.65rem;letter-spacing:.05em;text-transform:none;font-weight:400;">— Bold · Bullets · Numbers</span></label>
+              <div id="pl-topics-editor"></div>
+            </div>
             <div class="field"><label>Status</label>
               <select id="pl-status">
                 <option value="completed">✅ Completed</option>
@@ -1111,9 +1396,11 @@ async function loadPublicBlog() {
   el.innerHTML = items.map(b=>{
     const d=new Date(b.createdAt);
     const tags=(b.tags||'').split(',').map(t=>`<span class="tag">${t.trim()}</span>`).filter(t=>t.includes('>')).join('');
+    const isHtml = (b.content||'').startsWith('<');
+    const contentHtml = isHtml ? `<div class="rich-content">${b.content}</div>` : `<p>${b.content}</p>`;
     return `<div class="b-card">
       <div class="b-date"><span class="day">${d.getDate()}</span><span class="mon">${d.toLocaleString('default',{month:'short'}).toUpperCase()}</span></div>
-      <div class="b-content"><h3>${b.title}</h3><p>${b.content}</p><div class="b-tags">${tags}</div></div>
+      <div class="b-content"><h3>${b.title}</h3>${contentHtml}<div class="b-tags">${tags}</div></div>
     </div>`;
   }).join('');
 }
@@ -1137,11 +1424,16 @@ async function loadPublicSyllabus() {
   const items = await window.FB.loadCollection('syllabus');
   const el = document.getElementById('syllabus-list');
   if (!items.length) { el.innerHTML='<div class="empty-state"><span class="es-icon">📚</span>Syllabus coming soon.</div>'; return; }
-  el.innerHTML = items.map((s,i)=>`
-    <div class="acc-item${i===0?' open':''}">
+  el.innerHTML = items.map((s,i)=>{
+    const isHtml = (s.topics||'').trim().startsWith('<');
+    const topicsHtml = isHtml
+      ? `<div class="rich-content">${s.topics}</div>`
+      : `<ul class="unit-list">${(s.topics||'').split('\n').filter(Boolean).map(t=>`<li>${t}</li>`).join('')}</ul>`;
+    return `<div class="acc-item${i===0?' open':''}">
       <div class="acc-hdr" onclick="toggleAcc(this)">${s.title}<span class="acc-arrow">▼</span></div>
-      <div class="acc-body"><ul class="unit-list">${(s.topics||'').split('\n').filter(Boolean).map(t=>`<li>${t}</li>`).join('')}</ul></div>
-    </div>`).join('');
+      <div class="acc-body">${topicsHtml}</div>
+    </div>`;
+  }).join('');
 }
 
 async function loadPublicPlanning() {
@@ -1150,10 +1442,16 @@ async function loadPublicPlanning() {
   if (!items.length) { el.innerHTML='<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--muted)">No entries yet.</td></tr>'; return; }
   const bm={completed:'badge-green',progress:'badge-orange',upcoming:'badge-blue'};
   const lm={completed:'Completed',progress:'In Progress',upcoming:'Upcoming'};
-  el.innerHTML = items.map(p=>`<tr>
-    <td><strong>${p.month}</strong></td><td>${p.topics}</td><td>${p.chapter}</td>
-    <td><span class="badge ${bm[p.status]||'badge-blue'}">${lm[p.status]||p.status}</span></td>
-  </tr>`).join('');
+  // Strip HTML for table cell (plain text display)
+  function stripHtml(html){ const d=document.createElement('div'); d.innerHTML=html; return d.textContent||d.innerText||html; }
+  el.innerHTML = items.map(p=>{
+    const isHtml = (p.topics||'').trim().startsWith('<');
+    const topicsDisplay = isHtml ? `<div class="rich-content" style="font-size:.82rem">${p.topics}</div>` : p.topics;
+    return `<tr>
+      <td><strong>${p.month}</strong></td><td>${topicsDisplay}</td><td>${p.chapter}</td>
+      <td><span class="badge ${bm[p.status]||'badge-blue'}">${lm[p.status]||p.status}</span></td>
+    </tr>`;
+  }).join('');
 }
 
 async function loadPublicMaterial() {
@@ -1161,16 +1459,20 @@ async function loadPublicMaterial() {
   const el = document.getElementById('material-list');
   if (!items.length) { el.innerHTML='<div class="empty-state" style="grid-column:1/-1"><span class="es-icon">📂</span>Study materials coming soon.</div>'; return; }
   const icons={Notes:'📄',Worksheet:'📋',Reference:'📘','Formula Sheet':'🔢',Assignment:'✏️'};
-  el.innerHTML = items.map(m=>`
-    <div class="mat-card">
+  el.innerHTML = items.map(m=>{
+    const descVal = m.desc||m.subject||'';
+    const isHtml = descVal.trim().startsWith('<');
+    const descHtml = isHtml ? `<div class="rich-content">${descVal}</div>` : `<p>${descVal}</p>`;
+    return `<div class="mat-card">
       <div class="mat-type">${icons[m.type]||'📄'} ${m.type||'Notes'}</div>
       <h4>${m.title}</h4>
-      <p>${m.desc||m.subject||''}</p>
+      ${descHtml}
       ${m.url?`<div class="file-btns">
         <button class="btn-view-file" onclick="openPdfModal(${JSON.stringify(m.url)},${JSON.stringify(m.title)},${JSON.stringify(m.type||'')})">👁 View</button>
         <a class="btn-dl-file" href="${m.url}" download target="_blank">↓ Download</a>
       </div>`:''}
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 // ── ADMIN LOADERS ──
@@ -1241,6 +1543,45 @@ async function loadAdminPlanning() {
     </div>`).join('');
 }
 
+// ══════════════════════════════════════════════
+//  ☁️ CLOUDINARY CONFIG  (FREE — no credit card)
+//  1. Go to cloudinary.com → sign up free
+//  2. Dashboard → copy your "Cloud name"
+//  3. Settings → Upload → Add upload preset → mode: Unsigned → copy preset name
+//  4. Paste both values below
+// ══════════════════════════════════════════════
+const CLOUDINARY_CLOUD = 'dg6e31bqg';   // ← replace this
+const CLOUDINARY_PRESET = 'mdd_portal'; // ← replace this
+
+function uploadToCloudinary(file, onProgress) {
+  return new Promise((resolve, reject) => {
+    if (CLOUDINARY_CLOUD === 'YOUR_CLOUD_NAME') {
+      reject(new Error('Cloudinary not configured yet — please add your Cloud Name and Upload Preset (see instructions in the code)'));
+      return;
+    }
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', CLOUDINARY_PRESET);
+    fd.append('resource_type', 'auto');
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload`);
+
+    xhr.upload.onprogress = e => {
+      if (e.lengthComputable && onProgress) onProgress(Math.round(e.loaded / e.total * 100));
+    };
+    xhr.onload = () => {
+      try {
+        const res = JSON.parse(xhr.responseText);
+        if (res.secure_url) resolve(res.secure_url);
+        else reject(new Error(res.error?.message || 'Upload failed'));
+      } catch(e) { reject(e); }
+    };
+    xhr.onerror = () => reject(new Error('Network error during upload'));
+    xhr.send(fd);
+  });
+}
+
 // ── ADD FUNCTIONS ──
 async function addVideo() {
   const t=document.getElementById('v-title').value.trim(), u=document.getElementById('v-url').value.trim(), s=document.getElementById('v-subject').value.trim();
@@ -1252,50 +1593,155 @@ async function addVideo() {
   } catch(e) { toast('Error saving: '+e.message, false); console.error(e); }
 }
 async function addBlog() {
-  const t=document.getElementById('b-title').value.trim(), c=document.getElementById('b-content').value.trim(), g=document.getElementById('b-tags').value.trim();
-  if(!t||!c){toast('Fill title and content',false);return;}
+  const t = document.getElementById('b-title').value.trim();
+  const c = window._qBlog ? window._qBlog.root.innerHTML : '';
+  const g = document.getElementById('b-tags').value.trim();
+  const isEmpty = window._qBlog ? window._qBlog.getText().trim() === '' : !c;
+  if(!t || isEmpty){toast('Fill title and content',false);return;}
   try {
     await window.FB.addItem('blog',{title:t,content:c,tags:g});
-    ['b-title','b-content','b-tags'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('b-title').value='';
+    document.getElementById('b-tags').value='';
+    if(window._qBlog) window._qBlog.setContents([]);
     toast('Post published! ✅'); await loadAdminBlog(); loadPublicBlog();
   } catch(e) { toast('Error saving: '+e.message, false); console.error(e); }
 }
 async function addPaper() {
-  const t=document.getElementById('p-title').value.trim(), u=document.getElementById('p-url').value.trim();
-  if(!t||!u){toast('Fill title and link',false);return;}
+  const t = document.getElementById('p-title').value.trim();
+  if(!t){ toast('Fill in the paper title',false); return; }
+
+  const uploadWrap = document.getElementById('p-upload-zone-wrap');
+  const isUpload = uploadWrap && !uploadWrap.classList.contains('hidden-src');
+  let url = '';
+
+  if(isUpload) {
+    const file = document.getElementById('p-file-input').files[0];
+    if(!file){ toast('Please select a file to upload, or switch to Paste Link',false); return; }
+    if(file.size > 25*1024*1024){ toast('File too large — max 25 MB on free plan',false); return; }
+    try {
+      showProgress('p', 0);
+      url = await uploadToCloudinary(file, pct => showProgress('p', pct));
+      hideProgress('p');
+    } catch(e){ hideProgress('p'); toast('Upload failed: '+e.message, false); console.error(e); return; }
+  } else {
+    url = document.getElementById('p-url').value.trim();
+    if(!url){ toast('Paste a file link or switch to Upload from Device',false); return; }
+  }
+
   try {
-    await window.FB.addItem('papers',{title:t,cls:document.getElementById('p-class').value.trim(),
-      subject:document.getElementById('p-subject').value.trim(),year:document.getElementById('p-year').value.trim(),url:u});
-    ['p-title','p-class','p-subject','p-year','p-url'].forEach(id=>document.getElementById(id).value='');
+    await window.FB.addItem('papers',{title:t,
+      cls:document.getElementById('p-class').value.trim(),
+      subject:document.getElementById('p-subject').value.trim(),
+      year:document.getElementById('p-year').value.trim(),
+      url, source: isUpload ? 'cloudinary' : 'link'});
+    ['p-title','p-class','p-subject','p-year'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+    const pu=document.getElementById('p-url'); if(pu) pu.value='';
+    document.getElementById('p-file-input').value='';
+    document.getElementById('p-file-name').style.display='none';
     toast('Paper added! ✅'); await loadAdminPapers(); loadPublicPapers();
-  } catch(e) { toast('Error saving: '+e.message, false); console.error(e); }
+  } catch(e){ toast('Error saving: '+e.message, false); console.error(e); }
 }
+
 async function addMaterial() {
-  const t=document.getElementById('m-title').value.trim(), u=document.getElementById('m-url').value.trim();
-  if(!t||!u){toast('Fill title and link',false);return;}
+  const t = document.getElementById('m-title').value.trim();
+  if(!t){ toast('Fill in the title',false); return; }
+  const desc = window._qMDesc ? window._qMDesc.root.innerHTML : '';
+
+  const uploadWrap = document.getElementById('m-upload-zone-wrap');
+  const isUpload = uploadWrap && !uploadWrap.classList.contains('hidden-src');
+  let url = '';
+
+  if(isUpload) {
+    const file = document.getElementById('m-file-input').files[0];
+    if(!file){ toast('Please select a file to upload, or switch to Paste Link',false); return; }
+    if(file.size > 25*1024*1024){ toast('File too large — max 25 MB on free plan',false); return; }
+    try {
+      showProgress('m', 0);
+      url = await uploadToCloudinary(file, pct => showProgress('m', pct));
+      hideProgress('m');
+    } catch(e){ hideProgress('m'); toast('Upload failed: '+e.message, false); console.error(e); return; }
+  } else {
+    url = document.getElementById('m-url').value.trim();
+    if(!url){ toast('Paste a file link or switch to Upload from Device',false); return; }
+  }
+
   try {
-    await window.FB.addItem('material',{title:t,type:document.getElementById('m-type').value,
-      subject:document.getElementById('m-subject').value.trim(),desc:document.getElementById('m-desc').value.trim(),url:u});
-    ['m-title','m-subject','m-desc','m-url'].forEach(id=>document.getElementById(id).value='');
+    await window.FB.addItem('material',{title:t,
+      type:document.getElementById('m-type').value,
+      subject:document.getElementById('m-subject').value.trim(),
+      desc, url, source: isUpload ? 'cloudinary' : 'link'});
+    ['m-title','m-subject'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+    const mu=document.getElementById('m-url'); if(mu) mu.value='';
+    document.getElementById('m-file-input').value='';
+    document.getElementById('m-file-name').style.display='none';
+    if(window._qMDesc) window._qMDesc.setContents([]);
     toast('Material added! ✅'); await loadAdminMaterial(); loadPublicMaterial();
-  } catch(e) { toast('Error saving: '+e.message, false); console.error(e); }
+  } catch(e){ toast('Error saving: '+e.message, false); console.error(e); }
+}
+
+// ── Upload UI helpers ──
+function srcSwitch(prefix, mode, btn) {
+  const uploadWrap = document.getElementById(prefix+'-upload-zone-wrap');
+  const linkWrap   = document.getElementById(prefix+'-link-wrap');
+  const tabs = btn.closest('.src-tabs').querySelectorAll('.src-tab');
+  tabs.forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  if(mode === 'upload') {
+    uploadWrap.style.display = ''; uploadWrap.classList.remove('hidden-src');
+    linkWrap.classList.remove('show');
+  } else {
+    uploadWrap.style.display = 'none'; uploadWrap.classList.add('hidden-src');
+    linkWrap.classList.add('show');
+  }
+}
+function dzDragOver(e, zoneId) { e.preventDefault(); document.getElementById(zoneId).classList.add('drag-over'); }
+function dzDragLeave(zoneId)   { document.getElementById(zoneId).classList.remove('drag-over'); }
+function dzDrop(e, inputId, zoneId, nameId) {
+  e.preventDefault();
+  document.getElementById(zoneId).classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if(!file) return;
+  const inp = document.getElementById(inputId);
+  // Assign dropped file to the input via DataTransfer
+  const dt = new DataTransfer(); dt.items.add(file); inp.files = dt.files;
+  dzPick(inp, nameId);
+}
+function dzPick(input, nameId) {
+  const nameEl = document.getElementById(nameId);
+  if(input.files[0]) { nameEl.textContent = input.files[0].name; nameEl.style.display='inline-block'; }
+  else { nameEl.style.display='none'; }
+}
+function showProgress(prefix, pct) {
+  document.getElementById(prefix+'-progress-wrap').classList.add('show');
+  document.getElementById(prefix+'-progress-fill').style.width = pct+'%';
+  document.getElementById(prefix+'-progress-pct').textContent  = pct+'%';
+}
+function hideProgress(prefix) {
+  document.getElementById(prefix+'-progress-wrap').classList.remove('show');
+  document.getElementById(prefix+'-progress-fill').style.width = '0%';
 }
 async function addSyllabus() {
-  const t=document.getElementById('s-title').value.trim(), tp=document.getElementById('s-topics').value.trim();
-  if(!t||!tp){toast('Fill title and topics',false);return;}
+  const t=document.getElementById('s-title').value.trim();
+  const tp = window._qSyllabus ? window._qSyllabus.root.innerHTML : '';
+  const isEmpty = window._qSyllabus ? window._qSyllabus.getText().trim() === '' : !tp;
+  if(!t || isEmpty){toast('Fill title and topics',false);return;}
   try {
     await window.FB.addItem('syllabus',{title:t,topics:tp});
-    ['s-title','s-topics'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('s-title').value='';
+    if(window._qSyllabus) window._qSyllabus.setContents([]);
     toast('Unit added! ✅'); await loadAdminSyllabus(); loadPublicSyllabus();
   } catch(e) { toast('Error saving: '+e.message, false); console.error(e); }
 }
 async function addPlanning() {
-  const m=document.getElementById('pl-month').value.trim(), tp=document.getElementById('pl-topics').value.trim();
-  if(!m||!tp){toast('Fill month and topics',false);return;}
+  const m=document.getElementById('pl-month').value.trim();
+  const tp = window._qPlanning ? window._qPlanning.root.innerHTML : '';
+  const isEmpty = window._qPlanning ? window._qPlanning.getText().trim() === '' : !tp;
+  if(!m || isEmpty){toast('Fill month and topics',false);return;}
   try {
     await window.FB.addItem('planning',{month:m,topics:tp,chapter:document.getElementById('pl-chapter').value.trim(),
       status:document.getElementById('pl-status').value});
-    ['pl-month','pl-topics','pl-chapter'].forEach(id=>document.getElementById(id).value='');
+    ['pl-month','pl-chapter'].forEach(id=>document.getElementById(id).value='');
+    if(window._qPlanning) window._qPlanning.setContents([]);
     toast('Entry added! ✅'); await loadAdminPlanning(); loadPublicPlanning();
   } catch(e) { toast('Error saving: '+e.message, false); console.error(e); }
 }
@@ -1464,5 +1910,42 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </div>
 </div>
+
+<!-- ══════════════════════════════
+     QUILL JS — loaded last so it is
+     guaranteed available when init runs
+══════════════════════════════ -->
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+<script>
+(function initQuillEditors() {
+  const FULL_TB = [
+    [{ header: [1, 2, 3, false] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ color: [] }, { background: [] }],
+    [{ list: 'ordered' }, { list: 'bullet' }],
+    [{ indent: '-1' }, { indent: '+1' }],
+    [{ align: [] }],
+    ['blockquote', 'link'],
+    ['clean']
+  ];
+  const MINI_TB = [
+    ['bold', 'italic', 'underline'],
+    [{ list: 'ordered' }, { list: 'bullet' }],
+    [{ align: [] }],
+    ['link', 'clean']
+  ];
+
+  window._qBlog     = new Quill('#b-content-editor',  { theme:'snow', modules:{toolbar:FULL_TB}, placeholder:'Write your article here…' });
+  window._qSyllabus = new Quill('#s-topics-editor',   { theme:'snow', modules:{toolbar:FULL_TB}, placeholder:'Enter topics, sub-topics, notes with full formatting…' });
+  window._qMDesc    = new Quill('#m-desc-editor',     { theme:'snow', modules:{toolbar:MINI_TB}, placeholder:'Brief description of this material…' });
+  window._qPlanning = new Quill('#pl-topics-editor',  { theme:'snow', modules:{toolbar:MINI_TB}, placeholder:'Topics covered this month…' });
+
+  // Shorter height for mini editors
+  ['#m-desc-editor .ql-editor', '#pl-topics-editor .ql-editor'].forEach(sel => {
+    const el = document.querySelector(sel);
+    if (el) el.style.minHeight = '80px';
+  });
+})();
+</script>
 </body>
 </html>
