@@ -1763,97 +1763,85 @@ function toggleAcc(hdr){ hdr.parentElement.classList.toggle('open'); }
 // ══════════════════════════════
 //  PDF VIEWER MODAL
 // ══════════════════════════════
+// ── Detect file type from URL ──────────────────────────────────────────────
 function getFileType(url) {
   if (!url) return 'other';
   const u = url.toLowerCase().split('?')[0];
   if (u.includes('drive.google.com') || u.includes('docs.google.com')) return 'gdrive';
-  // Cloudinary — detect by domain, then by path/extension
   if (u.includes('res.cloudinary.com')) {
+    // Cloudinary image URLs always contain /image/upload/
     if (u.includes('/image/upload/') || /\.(png|jpg|jpeg|gif|webp|svg)$/.test(u)) return 'image';
-    if (/\.(doc|docx)$/.test(u)) return 'office';
-    if (/\.(ppt|pptx)$/.test(u)) return 'office';
-    if (/\.(xls|xlsx)$/.test(u)) return 'office';
-    // /raw/upload/ = PDF or other document
+    // Office files stored as raw
+    if (/\.(doc|docx|ppt|pptx|xls|xlsx)$/.test(u)) return 'office';
+    // Everything else from Cloudinary (including /raw/upload/) = PDF
     return 'pdf';
   }
-  if (u.endsWith('.pdf')) return 'pdf';
+  if (u.endsWith('.pdf') || u.includes('.pdf')) return 'pdf';
   if (/\.(png|jpg|jpeg|gif|webp|svg)$/.test(u)) return 'image';
   if (/\.(doc|docx|ppt|pptx|xls|xlsx)$/.test(u)) return 'office';
   return 'other';
 }
 
+// ── Build embed URL for viewer ──────────────────────────────────────────────
 function getEmbedUrl(url, type) {
   if (type === 'gdrive') {
-    let id = null;
+    // Google Drive share link → embed/preview
     const m1 = url.match(/\/file\/d\/([^\/]+)/);
     const m2 = url.match(/[?&]id=([^&]+)/);
-    if (m1) id = m1[1];
-    else if (m2) id = m2[1];
+    const id  = m1 ? m1[1] : (m2 ? m2[1] : null);
     if (id) return `https://drive.google.com/file/d/${id}/preview`;
     if (url.includes('/preview')) return url;
     return url;
   }
   if (type === 'pdf') {
-    // Cloudinary blocks iframe embedding via X-Frame-Options: SAMEORIGIN
-    // Fix: route through Google Docs Viewer which fetches it server-side
-    if (url.includes('res.cloudinary.com')) {
-      return `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
-    }
-    return url + '#toolbar=1&navpanes=1&scrollbar=1&view=FitH';
+    // Cloudinary raw PDFs: embed directly — raw uploads do NOT have
+    // X-Frame-Options restrictions (only image/video CDN URLs do)
+    // Using the direct URL inside an <object> tag works reliably
+    return url;
   }
   if (type === 'office') {
-    // Cloudinary office docs: also use Google Docs Viewer
     if (url.includes('res.cloudinary.com')) {
-      return `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+      // Office files from Cloudinary via Microsoft viewer
+      return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`;
     }
     return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`;
   }
   return url;
 }
 
-// Build a force-download URL that works cross-origin
+// ── Build force-download URL ─────────────────────────────────────────────────
 function getDownloadUrl(url) {
   if (!url) return url;
-  // Cloudinary: insert fl_attachment transformation to force browser download
   if (url.includes('res.cloudinary.com')) {
+    // fl_attachment tells Cloudinary to serve with Content-Disposition: attachment
+    // This triggers the browser's Save dialog directly — no popup blocker issues
     return url.replace('/upload/', '/upload/fl_attachment/');
   }
-  // Google Drive: convert share link to direct export/download link
   if (url.includes('drive.google.com') || url.includes('docs.google.com')) {
     const m1 = url.match(/\/file\/d\/([^\/]+)/);
     const m2 = url.match(/[?&]id=([^&]+)/);
-    const id = m1 ? m1[1] : (m2 ? m2[1] : null);
+    const id  = m1 ? m1[1] : (m2 ? m2[1] : null);
     if (id) return `https://drive.google.com/uc?export=download&id=${id}`;
   }
   return url;
 }
 
-// Download any file — handles Cloudinary, Google Drive, and plain URLs
+// ── Trigger download — works across all browsers without popup blocking ──────
+// Uses <a> tag click (never blocked) instead of window.open (blocked by popup blocker)
 function triggerDownload(url, filename) {
   const dlUrl = getDownloadUrl(url);
-  if (url.includes('res.cloudinary.com')) {
-    // Cloudinary fl_attachment URL: browser receives Content-Disposition: attachment
-    // Opening in new tab triggers instant download (no CORS blob needed)
-    window.open(dlUrl, '_blank');
-    return;
+  const a = document.createElement('a');
+  a.href = dlUrl;
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  // 'download' attribute only works same-origin, but href+target opens in new tab
+  // For Cloudinary fl_attachment URLs the browser shows Save dialog automatically
+  if (!url.includes('res.cloudinary.com') && !url.includes('drive.google.com')) {
+    a.download = filename || 'download';
   }
-  if (url.includes('drive.google.com') || url.includes('docs.google.com')) {
-    // Google Drive export link opens download in new tab
-    window.open(dlUrl, '_blank');
-    return;
-  }
-  // For plain direct URLs: try fetch-blob for a named download
-  fetch(dlUrl)
-    .then(r => r.blob())
-    .then(blob => {
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = filename || 'download';
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
-    })
-    .catch(() => window.open(dlUrl, '_blank'));
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => a.remove(), 500);
 }
 
 function openPdfModal(url, title, meta) {
@@ -1899,14 +1887,49 @@ function openPdfModal(url, title, meta) {
   document.body.style.overflow = 'hidden';
 
   if (type === 'image') {
+    // Images: direct <img> tag — always works
     const img = document.createElement('img');
     img.className = 'preview-img';
     img.src = url;
     img.onload = () => { body.innerHTML = ''; body.appendChild(img); };
     img.onerror = () => showNoPreview(body, url);
+
+  } else if (type === 'pdf' && url.includes('res.cloudinary.com')) {
+    // Cloudinary PDFs: use <object> tag — bypasses any iframe X-Frame restrictions
+    // <object> uses the browser's built-in PDF renderer, not an iframe sandbox
+    body.innerHTML = '';
+    const obj = document.createElement('object');
+    obj.data  = embedUrl;
+    obj.type  = 'application/pdf';
+    obj.style.cssText = 'width:100%;height:100%;border:none;display:block;';
+    // Fallback inside <object> — shown if browser can't render PDF inline
+    obj.innerHTML = `
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;
+        align-items:center;justify-content:center;gap:1rem;color:rgba(255,255,255,.5);
+        background:#0a0a18;text-align:center;padding:2rem;">
+        <span style="font-size:2.5rem">📄</span>
+        <p style="font-size:.9rem">Your browser cannot preview this PDF inline.</p>
+        <button class="pdf-action-btn download" style="margin-top:.5rem"
+          onclick="triggerDownload('${url.replace(/'/g,"\'")}','${(title||'document').replace(/'/g,"\'")}')">
+          ↓ Download PDF
+        </button>
+        <a href="${url}" target="_blank" rel="noopener"
+          style="font-size:.8rem;color:rgba(255,255,255,.4);margin-top:.25rem">
+          ↗ Open in New Tab
+        </a>
+      </div>`;
+    body.appendChild(obj);
+    // Hide loading spinner after short delay
+    setTimeout(() => {
+      const ld = document.getElementById('pdf-loading');
+      if (ld) ld.style.display = 'none';
+    }, 1500);
+
   } else if (type === 'other') {
     showNoPreview(body, url);
+
   } else {
+    // Google Drive, Office files, plain PDFs: use iframe
     const iframe = document.createElement('iframe');
     iframe.src = embedUrl;
     iframe.allow = 'autoplay';
@@ -1917,7 +1940,7 @@ function openPdfModal(url, title, meta) {
     setTimeout(() => {
       const ld = document.getElementById('pdf-loading');
       if (ld) ld.style.display = 'none';
-    }, 4000);
+    }, 5000);
     body.appendChild(iframe);
   }
 }
