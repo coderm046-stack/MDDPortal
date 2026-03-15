@@ -1763,7 +1763,9 @@ function uploadToCloudinary(file, onProgress) {
     const fd = new FormData();
     fd.append('file', file);
     fd.append('upload_preset', CLOUDINARY_PRESET);
-    fd.append('folder', 'mdd_portal');  // store in our own folder, not restricted samples/
+    fd.append('folder', 'mdd_portal');
+    fd.append('access_mode', 'public');          // force public — prevents "Blocked for delivery"
+    fd.append('access_control', JSON.stringify([{"access_type":"anonymous"}])); // allow anyone to view
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/${resourceType}/upload`);
