@@ -1148,7 +1148,10 @@ footer{background:var(--ink);color:#5a4534;text-align:center;padding:1.5rem;
             <!-- Link input (hidden by default) -->
             <div class="url-source" id="p-link-wrap">
               <div class="field" style="margin-bottom:0"><label style="margin-bottom:.4rem">PDF / File Link</label>
-                <input id="p-url" placeholder="https://drive.google.com/... or any direct link"></div>
+                <input id="p-url" placeholder="https://drive.google.com/... or any direct link"
+                  oninput="previewUrl(this.value,'p-url-preview')">
+                <div id="p-url-preview" style="font-size:.7rem;margin-top:.4rem;color:#6ee7b7;word-break:break-all;display:none"></div>
+              </div>
             </div>
 
             <br>
@@ -1215,7 +1218,10 @@ footer{background:var(--ink);color:#5a4534;text-align:center;padding:1.5rem;
             <!-- Link input (hidden by default) -->
             <div class="url-source" id="m-link-wrap">
               <div class="field" style="margin-bottom:0"><label style="margin-bottom:.4rem">File / Download Link</label>
-                <input id="m-url" placeholder="https://drive.google.com/... or any direct link"></div>
+                <input id="m-url" placeholder="https://drive.google.com/... or any direct link"
+                  oninput="previewUrl(this.value,'m-url-preview')">
+                <div id="m-url-preview" style="font-size:.7rem;margin-top:.4rem;color:#6ee7b7;word-break:break-all;display:none"></div>
+              </div>
             </div>
 
             <br>
@@ -1543,6 +1549,29 @@ async function loadAdminPlanning() {
     </div>`).join('');
 }
 
+// ── URL sanitizer — strips any accidentally pasted extra text ──────────────
+function sanitizeUrl(raw) {
+  if (!raw) return '';
+  // Trim whitespace
+  let u = raw.trim();
+  // Remove surrounding quotes if present
+  u = u.replace(/^["']+|["']+$/g, '');
+  // Extract just the URL — stop at first whitespace or quote after the scheme
+  const m = u.match(/https?:\/\/[^\s"'<>]+/i);
+  if (m) u = m[0];
+  // Remove any trailing punctuation like . , ) ] >
+  u = u.replace(/[.,)>\]]+$/, '');
+  return u;
+}
+
+// ── URL validator — shows clear error if URL looks wrong ────────────────────
+function validateUrl(url, fieldLabel) {
+  if (!url) { toast(`${fieldLabel}: please paste a valid URL or upload a file`, false); return false; }
+  if (!url.startsWith('http')) { toast(`${fieldLabel}: URL must start with https://`, false); return false; }
+  if (url.includes(' ')) { toast(`${fieldLabel}: URL contains spaces — please paste just the link`, false); return false; }
+  return true;
+}
+
 // ══════════════════════════════════════════════
 //  ☁️ CLOUDINARY CONFIG  (FREE — no credit card)
 //  1. Go to cloudinary.com → sign up free
@@ -1577,7 +1606,7 @@ function uploadToCloudinary(file, onProgress) {
     xhr.onload = () => {
       try {
         const res = JSON.parse(xhr.responseText);
-        if (res.secure_url) resolve(res.secure_url);
+        if (res.secure_url) resolve(sanitizeUrl(res.secure_url));
         else reject(new Error(res.error?.message || 'Upload failed — check your Cloud Name and Upload Preset are correct'));
       } catch(e) { reject(e); }
     };
@@ -1628,8 +1657,8 @@ async function addPaper() {
       hideProgress('p');
     } catch(e){ hideProgress('p'); toast('Upload failed: '+e.message, false); console.error(e); return; }
   } else {
-    url = document.getElementById('p-url').value.trim();
-    if(!url){ toast('Paste a file link or switch to Upload from Device',false); return; }
+    url = sanitizeUrl(document.getElementById('p-url').value);
+    if(!validateUrl(url, 'Paper link')) return;
   }
 
   try {
@@ -1665,8 +1694,8 @@ async function addMaterial() {
       hideProgress('m');
     } catch(e){ hideProgress('m'); toast('Upload failed: '+e.message, false); console.error(e); return; }
   } else {
-    url = document.getElementById('m-url').value.trim();
-    if(!url){ toast('Paste a file link or switch to Upload from Device',false); return; }
+    url = sanitizeUrl(document.getElementById('m-url').value);
+    if(!validateUrl(url, 'Material link')) return;
   }
 
   try {
@@ -1684,6 +1713,23 @@ async function addMaterial() {
 }
 
 // ── Upload UI helpers ──
+function previewUrl(raw, previewId) {
+  const el = document.getElementById(previewId);
+  if (!el) return;
+  const clean = sanitizeUrl(raw);
+  if (clean && clean.startsWith('http')) {
+    el.textContent = '✅ URL detected: ' + clean;
+    el.style.display = 'block';
+    el.style.color = '#6ee7b7';
+  } else if (raw.trim()) {
+    el.textContent = '⚠️ Does not look like a valid URL — paste just the link';
+    el.style.display = 'block';
+    el.style.color = '#f87171';
+  } else {
+    el.style.display = 'none';
+  }
+}
+
 function srcSwitch(prefix, mode, btn) {
   const uploadWrap = document.getElementById(prefix+'-upload-zone-wrap');
   const linkWrap   = document.getElementById(prefix+'-link-wrap');
@@ -1828,7 +1874,8 @@ function getDownloadUrl(url) {
 
 // ── Trigger download — works across all browsers without popup blocking ──────
 // Uses <a> tag click (never blocked) instead of window.open (blocked by popup blocker)
-function triggerDownload(url, filename) {
+function triggerDownload(rawUrl, filename) {
+  const url   = sanitizeUrl(rawUrl);  // clean any corruption
   const dlUrl = getDownloadUrl(url);
   const a = document.createElement('a');
   a.href = dlUrl;
@@ -1844,7 +1891,8 @@ function triggerDownload(url, filename) {
   setTimeout(() => a.remove(), 500);
 }
 
-function openPdfModal(url, title, meta) {
+function openPdfModal(rawUrl, title, meta) {
+  const url = sanitizeUrl(rawUrl);  // clean any corruption from stored URL
   const modal   = document.getElementById('pdf-modal');
   const body    = document.getElementById('pdf-modal-body');
   const loading = document.getElementById('pdf-loading');
