@@ -1447,7 +1447,7 @@ async function loadPublicPapers() {
     <td>
       <div class="file-btns">
         ${p.url?`<button class="btn-view-file" onclick="openPdfModal(${JSON.stringify(p.url)},${JSON.stringify(p.title)},${JSON.stringify(p.subject||'')})">👁 View</button>`:''}
-        ${p.url?`<button class="btn-dl-file" onclick="triggerDownload(${JSON.stringify(p.url)},${JSON.stringify(p.title||'paper')})">↓ Download</button>`:''}
+        ${p.url?`<button class="btn-dl-file" onclick="triggerDownload(${JSON.stringify(p.url)},${JSON.stringify(p.title||'paper')})">&#8595; Download</button>`:''}
       </div>
     </td>
   </tr>`).join('');
@@ -1502,7 +1502,7 @@ async function loadPublicMaterial() {
       ${descHtml}
       ${m.url?`<div class="file-btns">
         <button class="btn-view-file" onclick="openPdfModal(${JSON.stringify(m.url)},${JSON.stringify(m.title)},${JSON.stringify(m.type||'')})">👁 View</button>
-        <button class="btn-dl-file" onclick="triggerDownload(${JSON.stringify(m.url)},${JSON.stringify(m.title||'material')})">↓ Download</button>
+        <button class="btn-dl-file" onclick="triggerDownload(${JSON.stringify(m.url)},${JSON.stringify(m.title||'material')})">&#8595; Download</button>
       </div>`:''}
     </div>`;
   }).join('');
@@ -1837,273 +1837,174 @@ function toggleAcc(hdr){ hdr.parentElement.classList.toggle('open'); }
 //  PDF VIEWER MODAL
 // ══════════════════════════════
 // ── Detect file type from URL ──────────────────────────────────────────────
+// ── File type detection ─────────────────────────────────────────────────────
 function getFileType(url) {
   if (!url) return 'other';
   const u = url.toLowerCase().split('?')[0];
   if (u.includes('drive.google.com') || u.includes('docs.google.com')) return 'gdrive';
   if (u.includes('res.cloudinary.com')) {
-    // Cloudinary image URLs always contain /image/upload/
     if (u.includes('/image/upload/') || /\.(png|jpg|jpeg|gif|webp|svg)$/.test(u)) return 'image';
-    // Office files stored as raw
     if (/\.(doc|docx|ppt|pptx|xls|xlsx)$/.test(u)) return 'office';
-    // Everything else from Cloudinary (including /raw/upload/) = PDF
     return 'pdf';
   }
-  if (u.endsWith('.pdf') || u.includes('.pdf')) return 'pdf';
-  if (/\.(png|jpg|jpeg|gif|webp|svg)$/.test(u)) return 'image';
-  if (/\.(doc|docx|ppt|pptx|xls|xlsx)$/.test(u)) return 'office';
+  if (/\.(pdf)$/i.test(u)) return 'pdf';
+  if (/\.(png|jpg|jpeg|gif|webp|svg)$/i.test(u)) return 'image';
+  if (/\.(doc|docx|ppt|pptx|xls|xlsx)$/i.test(u)) return 'office';
   return 'other';
 }
 
-// ── Build embed URL for viewer ──────────────────────────────────────────────
-function getEmbedUrl(url, type) {
+// ── Build the best view URL for each source ──────────────────────────────────
+function getViewUrl(url) {
+  if (!url) return url;
+  const type = getFileType(url);
+  // Google Drive — convert to native preview
   if (type === 'gdrive') {
-    // Google Drive share link → embed/preview
     const m1 = url.match(/\/file\/d\/([^\/]+)/);
     const m2 = url.match(/[?&]id=([^&]+)/);
     const id  = m1 ? m1[1] : (m2 ? m2[1] : null);
-    if (id) return `https://drive.google.com/file/d/${id}/preview`;
-    if (url.includes('/preview')) return url;
+    if (id) return 'https://drive.google.com/file/d/' + id + '/view';
     return url;
   }
-  if (type === 'pdf') {
-    return url; // PDF.js renders directly from the URL — no embed wrapper needed
-  }
+  // Office files — Microsoft viewer
   if (type === 'office') {
-    if (url.includes('res.cloudinary.com')) {
-      // Office files from Cloudinary via Microsoft viewer
-      return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`;
-    }
-    return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`;
+    return 'https://view.officeapps.live.com/op/view.aspx?src=' + encodeURIComponent(url);
   }
+  // Everything else (Cloudinary PDFs, plain PDFs, images) — direct URL
   return url;
 }
 
-// ── Build force-download URL ─────────────────────────────────────────────────
+// ── Build the best download URL ───────────────────────────────────────────────
 function getDownloadUrl(url) {
   if (!url) return url;
+  // Cloudinary: add fl_attachment so browser gets Content-Disposition:attachment
   if (url.includes('res.cloudinary.com')) {
-    // fl_attachment tells Cloudinary to serve with Content-Disposition: attachment
-    // This triggers the browser's Save dialog directly — no popup blocker issues
     return url.replace('/upload/', '/upload/fl_attachment/');
   }
+  // Google Drive: export as download
   if (url.includes('drive.google.com') || url.includes('docs.google.com')) {
     const m1 = url.match(/\/file\/d\/([^\/]+)/);
     const m2 = url.match(/[?&]id=([^&]+)/);
     const id  = m1 ? m1[1] : (m2 ? m2[1] : null);
-    if (id) return `https://drive.google.com/uc?export=download&id=${id}`;
+    if (id) return 'https://drive.google.com/uc?export=download&id=' + id;
   }
   return url;
 }
 
-// ── Trigger download — works across all browsers without popup blocking ──────
-// Uses <a> tag click (never blocked) instead of window.open (blocked by popup blocker)
-function triggerDownload(rawUrl, filename) {
-  const url   = sanitizeUrl(rawUrl);
-  const dlUrl = getDownloadUrl(url);
-  // Always open in new tab — browser handles fl_attachment as Save dialog,
-  // Google Drive export as download, plain URLs as view/download
-  window.open(dlUrl, '_blank', 'noopener,noreferrer');
+// ── Open view URL in new tab ──────────────────────────────────────────────────
+function viewFile(rawUrl) {
+  var url = sanitizeUrl(rawUrl);
+  window.open(getViewUrl(url), '_blank', 'noopener,noreferrer');
 }
 
-function openPdfModal(rawUrl, title, meta) {
-  const url = sanitizeUrl(rawUrl);  // clean any corruption from stored URL
-  const modal   = document.getElementById('pdf-modal');
-  const body    = document.getElementById('pdf-modal-body');
-  const loading = document.getElementById('pdf-loading');
-  const titleEl = document.getElementById('pdf-modal-title');
-  const metaEl  = document.getElementById('pdf-modal-meta');
-  const badge   = document.getElementById('pdf-type-badge');
-  const hint    = document.getElementById('pdf-toolbar-hint');
-  const iconEl  = document.getElementById('pdf-file-icon');
-  const dlBtn   = document.getElementById('pdf-download-btn');
-  const nwBtn   = document.getElementById('pdf-newwin-btn');
+// ── Trigger download in new tab ───────────────────────────────────────────────
+function triggerDownload(rawUrl, filename) {
+  var url = sanitizeUrl(rawUrl);
+  window.open(getDownloadUrl(url), '_blank', 'noopener,noreferrer');
+}
 
-  // Set header info
+// ── Open "preview" modal — shows file info + action buttons ──────────────────
+// (No iframe/embed — just a clean card with Open and Download buttons)
+function openPdfModal(rawUrl, title, meta) {
+  var url  = sanitizeUrl(rawUrl);
+  var type = getFileType(url);
+  var viewUrl  = getViewUrl(url);
+  var dlUrl    = getDownloadUrl(url);
+
+  var modal   = document.getElementById('pdf-modal');
+  var body    = document.getElementById('pdf-modal-body');
+  var titleEl = document.getElementById('pdf-modal-title');
+  var metaEl  = document.getElementById('pdf-modal-meta');
+  var badge   = document.getElementById('pdf-type-badge');
+  var hint    = document.getElementById('pdf-toolbar-hint');
+  var iconEl  = document.getElementById('pdf-file-icon');
+  var dlBtn   = document.getElementById('pdf-download-btn');
+  var nwBtn   = document.getElementById('pdf-newwin-btn');
+
   titleEl.textContent = title || 'Document';
   metaEl.textContent  = meta  || '';
-  dlBtn.onclick = () => triggerDownload(url, title || 'download');
-  nwBtn.href = url;
 
-  // Detect type
-  const type = getFileType(url);
-  const embedUrl = getEmbedUrl(url, type);
-
-  // Badge + icon + hint
-  const typeMap = {
-    gdrive: { label:'Google Drive', cls:'pdf', icon:'📄', hint:'Viewing via Google Drive preview' },
-    pdf:    { label:'PDF',          cls:'pdf', icon:'📕', hint:'Viewing via Google Docs · Use browser zoom to navigate' },
-    image:  { label:'Image',        cls:'img', icon:'🖼️', hint:'Click and drag to pan · scroll to zoom (in new tab)' },
-    office: { label:'Office Doc',   cls:'doc', icon:'📊', hint:'Viewing via Microsoft Office Online viewer' },
-    other:  { label:'File',         cls:'other',icon:'📁', hint:'Preview not available for this file type' },
+  var typeMap = {
+    gdrive: { label:'Google Drive', cls:'pdf',   icon:'📄' },
+    pdf:    { label:'PDF',          cls:'pdf',   icon:'📕' },
+    image:  { label:'Image',        cls:'img',   icon:'🖼️' },
+    office: { label:'Office Doc',   cls:'doc',   icon:'📊' },
+    other:  { label:'File',         cls:'other', icon:'📁' },
   };
-  const info = typeMap[type] || typeMap.other;
-  badge.textContent = info.label;
-  badge.className   = `pdf-type-badge ${info.cls}`;
-  iconEl.textContent = info.icon;
-  hint.textContent   = info.hint;
+  var info = typeMap[type] || typeMap.other;
+  badge.textContent   = info.label;
+  badge.className     = 'pdf-type-badge ' + info.cls;
+  iconEl.textContent  = info.icon;
+  hint.textContent    = 'Opens in a new tab on your browser';
 
-  // Clear body and show loading
-  body.innerHTML = '<div class="pdf-loading" id="pdf-loading"><div class="load-ring"></div><span>Loading document…</span></div>';
+  // Wire buttons
+  dlBtn.onclick = function() { triggerDownload(url, title || 'download'); };
+  nwBtn.href    = viewUrl;
+
+  // Body: image preview inline, everything else shows action card
+  body.innerHTML = '';
   modal.classList.add('open');
   document.body.style.overflow = 'hidden';
 
   if (type === 'image') {
-    // Images: direct <img> tag — always works
-    const img = document.createElement('img');
+    // Images can be shown inline — no CORS issue
+    var img = document.createElement('img');
     img.className = 'preview-img';
     img.src = url;
-    img.onload = () => { body.innerHTML = ''; body.appendChild(img); };
-    img.onerror = () => showNoPreview(body, url);
-
-  } else if (type === 'pdf') {
-    // PDF.js renders the PDF as canvas — works 100% cross-origin
-    body.innerHTML = '';
-    const spin = document.createElement('div');
-    spin.className = 'pdf-loading';
-    spin.style.cssText = 'position:absolute;inset:0;z-index:2;';
-    spin.innerHTML = '<div class="load-ring"></div><span>Loading PDF…</span>';
-    body.appendChild(spin);
-    renderPdfJs(url, body, title);
-
-  } else if (type === 'other') {
-
-    showNoPreview(body, url);
+    body.appendChild(img);
 
   } else {
-    // Google Drive, Office files, plain PDFs: use iframe
-    const iframe = document.createElement('iframe');
-    iframe.src = embedUrl;
-    iframe.allow = 'autoplay';
-    iframe.onload = () => {
-      const ld = document.getElementById('pdf-loading');
-      if (ld) ld.style.display = 'none';
+    // For all other file types: show a clean action card
+    // Opening in a new tab is the MOST RELIABLE approach across all browsers/devices
+    var typeLabel = {
+      pdf:    'PDF Document',
+      gdrive: 'Google Drive File',
+      office: 'Office Document',
+      other:  'File',
+    }[type] || 'File';
+
+    var tips = {
+      pdf:    'PDF opens in your browser built-in viewer.',
+      gdrive: 'Opens in Google Drive preview.',
+      office: 'Opens in Microsoft Office Online viewer.',
+      other:  'Download the file to open it.',
     };
-    setTimeout(() => {
-      const ld = document.getElementById('pdf-loading');
-      if (ld) ld.style.display = 'none';
-    }, 5000);
-    body.appendChild(iframe);
+
+    body.innerHTML =
+      '<div style="position:absolute;inset:0;display:flex;flex-direction:column;' +
+      'align-items:center;justify-content:center;gap:1.4rem;padding:2rem;' +
+      'background:linear-gradient(135deg,#0a0a18,#12122a);text-align:center;">' +
+
+      '<div style="width:72px;height:72px;border-radius:18px;display:flex;align-items:center;' +
+      'justify-content:center;font-size:2.2rem;' +
+      'background:linear-gradient(135deg,#e8610a,#f07d2a);box-shadow:0 8px 28px rgba(232,97,10,.4);">' +
+      info.icon + '</div>' +
+
+      '<div>' +
+      '<p style="color:#fff;font-size:1rem;font-weight:700;font-family:Playfair Display,serif;margin-bottom:.3rem;">' +
+      (title || 'Document') + '</p>' +
+      '<p style="color:rgba(255,255,255,.4);font-size:.78rem;">' + typeLabel + (meta ? ' &nbsp;·&nbsp; ' + meta : '') + '</p>' +
+      '</div>' +
+
+      '<p style="color:rgba(255,255,255,.45);font-size:.82rem;max-width:300px;line-height:1.6;">' +
+      tips[type] + '</p>' +
+
+      '<div style="display:flex;gap:.75rem;flex-wrap:wrap;justify-content:center;">' +
+      '<a href="' + viewUrl + '" target="_blank" rel="noopener" ' +
+      'style="display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.6rem;' +
+      'border-radius:10px;font-size:.88rem;font-weight:700;text-decoration:none;' +
+      'background:linear-gradient(135deg,#e8610a,#f07d2a);color:#fff;' +
+      'box-shadow:0 4px 16px rgba(232,97,10,.4);">' +
+      '<span style="font-size:1rem;">&#128065;</span> View File</a>' +
+
+      '<a href="' + dlUrl + '" target="_blank" rel="noopener" ' +
+      'style="display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.6rem;' +
+      'border-radius:10px;font-size:.88rem;font-weight:700;text-decoration:none;' +
+      'background:rgba(255,255,255,.1);color:#fff;border:1.5px solid rgba(255,255,255,.2);">' +
+      '<span style="font-size:1rem;">&#8595;</span> Download</a>' +
+      '</div>' +
+
+      '</div>';
   }
-}
-
-function showNoPreview(body, url) {
-  body.innerHTML = `<div class="pdf-no-preview">
-    <span class="np-icon">📁</span>
-    <h3>Preview Not Available</h3>
-    <p>This file type cannot be previewed directly in the browser. Please download the file to view it.</p>
-    <button class="pdf-action-btn download" onclick="triggerDownload('${url}','download')">↓ Download File</button>
-  </div>`;
-}
-
-function closePdfModal() {
-  document.getElementById('pdf-modal').classList.remove('open');
-  document.body.style.overflow = '';
-  document.getElementById('pdf-modal-body').innerHTML = '';
-  window._pdfAbort = true;
-}
-
-// ── PDF.js renderer ─────────────────────────────────────────────────────────
-// Renders PDFs as canvas — works 100% cross-origin, no browser PDF plugin needed
-async function renderPdfJs(url, container, title) {
-  window._pdfAbort = false;
-
-  // Load PDF.js from CDN on first use
-  if (!window.pdfjsLib) {
-    await new Promise((res, rej) => {
-      const s = document.createElement('script');
-      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-      s.onload = res;
-      s.onerror = () => rej(new Error('PDF.js CDN load failed'));
-      document.head.appendChild(s);
-    });
-    window.pdfjsLib.GlobalWorkerOptions.workerSrc =
-      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-  }
-
-  try {
-    // disableRange + disableStream = simple GET with no Range headers
-    // This avoids the CORS preflight that Cloudinary blocks for Range requests
-    const loadTask = window.pdfjsLib.getDocument({
-      url              : url,
-      withCredentials  : false,
-      disableRange     : true,
-      disableStream    : true,
-      cMapUrl          : 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
-      cMapPacked       : true,
-    });
-
-    const pdf   = await loadTask.promise;
-    if (window._pdfAbort) return;
-
-    const total = pdf.numPages;
-
-    // Build scrollable page container
-    container.innerHTML = '';
-    const wrap = document.createElement('div');
-    wrap.style.cssText = 'overflow-y:auto;height:100%;background:#1a1a1a;padding:16px 12px;box-sizing:border-box;';
-
-    const pageInfo = document.createElement('div');
-    pageInfo.style.cssText = 'text-align:center;color:rgba(255,255,255,.3);font-size:.72rem;' +
-                             'margin-bottom:10px;letter-spacing:.05em;';
-    pageInfo.textContent   = total + (total === 1 ? ' page' : ' pages');
-    wrap.appendChild(pageInfo);
-    container.appendChild(wrap);
-
-    // Render each page
-    for (let n = 1; n <= total; n++) {
-      if (window._pdfAbort) return;
-      const page     = await pdf.getPage(n);
-      const viewport = page.getViewport({ scale: 1.6 });
-      const canvas   = document.createElement('canvas');
-      canvas.width   = viewport.width;
-      canvas.height  = viewport.height;
-      canvas.style.cssText = 'display:block;margin:0 auto 12px;max-width:100%;' +
-                             'border-radius:4px;box-shadow:0 4px 16px rgba(0,0,0,.7);background:#fff;';
-      await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-      if (window._pdfAbort) return;
-      wrap.appendChild(canvas);
-    }
-
-  } catch(err) {
-    console.error('PDF.js error:', err);
-    // Fallback: try Google Docs Viewer inside the modal
-    showPdfFallback(container, url, title, err.message);
-  }
-}
-
-function showPdfFallback(container, url, title, errMsg) {
-  var gdocsUrl = 'https://docs.google.com/viewer?url=' + encodeURIComponent(url) + '&embedded=true';
-  container.innerHTML = '';
-
-  var fallbackDiv = document.createElement('div');
-  fallbackDiv.style.cssText = 'position:absolute;inset:0;display:flex;flex-direction:column;' +
-    'align-items:center;justify-content:center;gap:1rem;background:#0a0a18;text-align:center;padding:2rem;';
-
-  var safeUrl   = (url   || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-  var safeTitle = (title || 'document').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-
-  fallbackDiv.innerHTML = [
-    '<span style="font-size:2.5rem">\uD83D\uDCC4</span>',
-    '<p style="color:rgba(255,255,255,.8);font-size:.95rem;">Rendering PDF...</p>',
-    '<p style="color:rgba(255,255,255,.4);font-size:.75rem;max-width:320px;">',
-    'Loading via Google Docs Viewer. If blank, click Open in New Tab.</p>',
-    '<div style="display:flex;gap:.75rem;flex-wrap:wrap;justify-content:center;margin-top:.5rem;">',
-    '<button class="pdf-action-btn download" ',
-    'onclick="triggerDownload(\'' + safeUrl + '\',\'' + safeTitle + '\')">',
-    'Download</button>',
-    '<a class="pdf-action-btn newwin" href="' + (url || '#') + '" target="_blank" rel="noopener">',
-    'Open in New Tab</a>',
-    '</div>'
-  ].join('');
-
-  var iframe = document.createElement('iframe');
-  iframe.src = gdocsUrl;
-  iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;';
-  iframe.onload = function() { fallbackDiv.style.display = 'none'; };
-
-  container.appendChild(iframe);
-  container.appendChild(fallbackDiv);
 }
 
 
