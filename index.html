@@ -1840,10 +1840,7 @@ function getEmbedUrl(url, type) {
     return url;
   }
   if (type === 'pdf') {
-    // Cloudinary raw PDFs: embed directly — raw uploads do NOT have
-    // X-Frame-Options restrictions (only image/video CDN URLs do)
-    // Using the direct URL inside an <object> tag works reliably
-    return url;
+    return url; // PDF.js renders directly from the URL — no embed wrapper needed
   }
   if (type === 'office') {
     if (url.includes('res.cloudinary.com')) {
@@ -1942,38 +1939,18 @@ function openPdfModal(rawUrl, title, meta) {
     img.onload = () => { body.innerHTML = ''; body.appendChild(img); };
     img.onerror = () => showNoPreview(body, url);
 
-  } else if (type === 'pdf' && url.includes('res.cloudinary.com')) {
-    // Cloudinary PDFs: use <object> tag — bypasses any iframe X-Frame restrictions
-    // <object> uses the browser's built-in PDF renderer, not an iframe sandbox
+  } else if (type === 'pdf') {
+    // PDF.js renders the PDF as canvas — works 100% cross-origin
     body.innerHTML = '';
-    const obj = document.createElement('object');
-    obj.data  = embedUrl;
-    obj.type  = 'application/pdf';
-    obj.style.cssText = 'width:100%;height:100%;border:none;display:block;';
-    // Fallback inside <object> — shown if browser can't render PDF inline
-    obj.innerHTML = `
-      <div style="position:absolute;inset:0;display:flex;flex-direction:column;
-        align-items:center;justify-content:center;gap:1rem;color:rgba(255,255,255,.5);
-        background:#0a0a18;text-align:center;padding:2rem;">
-        <span style="font-size:2.5rem">📄</span>
-        <p style="font-size:.9rem">Your browser cannot preview this PDF inline.</p>
-        <button class="pdf-action-btn download" style="margin-top:.5rem"
-          onclick="triggerDownload('${url.replace(/'/g,"\'")}','${(title||'document').replace(/'/g,"\'")}')">
-          ↓ Download PDF
-        </button>
-        <a href="${url}" target="_blank" rel="noopener"
-          style="font-size:.8rem;color:rgba(255,255,255,.4);margin-top:.25rem">
-          ↗ Open in New Tab
-        </a>
-      </div>`;
-    body.appendChild(obj);
-    // Hide loading spinner after short delay
-    setTimeout(() => {
-      const ld = document.getElementById('pdf-loading');
-      if (ld) ld.style.display = 'none';
-    }, 1500);
+    const spin = document.createElement('div');
+    spin.className = 'pdf-loading';
+    spin.style.cssText = 'position:absolute;inset:0;z-index:2;';
+    spin.innerHTML = '<div class="load-ring"></div><span>Loading PDF…</span>';
+    body.appendChild(spin);
+    renderPdfJs(url, body, title);
 
   } else if (type === 'other') {
+
     showNoPreview(body, url);
 
   } else {
@@ -2005,9 +1982,71 @@ function showNoPreview(body, url) {
 function closePdfModal() {
   document.getElementById('pdf-modal').classList.remove('open');
   document.body.style.overflow = '';
-  // Kill iframe to stop loading
-  const body = document.getElementById('pdf-modal-body');
-  body.innerHTML = '';
+  document.getElementById('pdf-modal-body').innerHTML = '';
+  window._pdfAbort = true;
+}
+
+// ── PDF.js renderer ─────────────────────────────────────────────────────────
+// Renders PDFs as canvas — works 100% cross-origin, no browser PDF plugin needed
+async function renderPdfJs(url, container, title) {
+  window._pdfAbort = false;
+
+  // Load PDF.js from CDN on first use
+  if (!window.pdfjsLib) {
+    await new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+      s.onload = res;
+      s.onerror = () => rej(new Error('PDF.js load failed'));
+      document.head.appendChild(s);
+    });
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+
+  try {
+    const pdf   = await window.pdfjsLib.getDocument({ url, withCredentials: false }).promise;
+    if (window._pdfAbort) return;
+    const total = pdf.numPages;
+
+    container.innerHTML = '';
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'overflow-y:auto;height:100%;background:#111;padding:12px 8px;box-sizing:border-box;';
+
+    const info = document.createElement('div');
+    info.style.cssText = 'text-align:center;color:rgba(255,255,255,.35);font-size:.75rem;margin-bottom:8px;';
+    info.textContent = total + ' page' + (total > 1 ? 's' : '');
+    wrap.appendChild(info);
+    container.appendChild(wrap);
+
+    for (let n = 1; n <= total; n++) {
+      if (window._pdfAbort) return;
+      const page     = await pdf.getPage(n);
+      const viewport = page.getViewport({ scale: 1.6 });
+      const canvas   = document.createElement('canvas');
+      canvas.width   = viewport.width;
+      canvas.height  = viewport.height;
+      canvas.style.cssText = 'display:block;margin:0 auto 10px;max-width:100%;border-radius:3px;box-shadow:0 2px 10px rgba(0,0,0,.6);';
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+      if (window._pdfAbort) return;
+      wrap.appendChild(canvas);
+    }
+
+  } catch(err) {
+    console.error('PDF.js error:', err);
+    const safeUrl   = (url||'').replace(/'/g,"\\'");
+    const safeTitle = (title||'document').replace(/'/g,"\\'");
+    container.innerHTML =
+      '<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;' +
+      'justify-content:center;gap:.9rem;color:rgba(255,255,255,.55);background:#0a0a18;text-align:center;padding:2rem;">' +
+      '<span style="font-size:3rem">📄</span>' +
+      '<p style="font-size:.95rem;color:rgba(255,255,255,.75);">Preview could not load.</p>' +
+      '<p style="font-size:.8rem;max-width:300px;">The file may still be processing. Wait a few seconds and try again, or download it directly.</p>' +
+      '<div style="display:flex;gap:.75rem;flex-wrap:wrap;justify-content:center;margin-top:.5rem;">' +
+      '<button class="pdf-action-btn download" onclick="triggerDownload(\'' + safeUrl + '\',\'' + safeTitle + '\')">↓ Download</button>' +
+      '<a class="pdf-action-btn newwin" href="' + (url||'#') + '" target="_blank" rel="noopener">↗ Open in New Tab</a>' +
+      '</div></div>';
+  }
 }
 
 // Close on backdrop click + Escape — wait for DOM
