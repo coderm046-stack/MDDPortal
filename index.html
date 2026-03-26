@@ -3,6 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- ══ FORCE FRESH LOAD ON ALL BROWSERS & DEVICES ══ -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+
 <title>MDD Teacher Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 
@@ -498,27 +504,25 @@ tbody td{padding:.95rem 1.2rem;font-size:.88rem;color:var(--ink2);}
 /* ════════════ PDF VIEWER MODAL ════════════ */
 #pdf-modal{
   display:none;position:fixed;inset:0;z-index:800;
-  background:rgba(0,0,0,.82);backdrop-filter:blur(6px);
+  background:#0a0a18;
 }
-#pdf-modal.open{display:flex;align-items:center;justify-content:center;padding:1rem;}
-@media(max-width:600px){
-  #pdf-modal.open{padding:0;align-items:flex-end;}
-  .pdf-modal-box{border-radius:20px 20px 0 0;height:95vh;max-width:100%;}
-  .pdf-modal-header{padding:.75rem 1rem;}
-  .pdf-modal-title{font-size:.88rem;}
-  .pdf-modal-actions{gap:.3rem;}
-  .pdf-action-btn{padding:.42rem .75rem;font-size:.72rem;}
-  .pdf-modal-toolbar{padding:.45rem 1rem;}
-  .pdf-toolbar-hint{display:none;}
-}
+#pdf-modal.open{display:flex;flex-direction:column;}
 
 .pdf-modal-box{
-  background:#1a1a2e;border:1.5px solid rgba(255,255,255,.1);border-radius:20px;
-  width:100%;max-width:960px;height:90vh;display:flex;flex-direction:column;
-  box-shadow:0 30px 80px rgba(0,0,0,.7);overflow:hidden;
-  animation:slideUp .25s ease;
+  background:#1a1a2e;
+  width:100%;height:100vh;display:flex;flex-direction:column;
+  overflow:hidden;
+  animation:slideUp .2s ease;
 }
-@keyframes slideUp{from{transform:translateY(30px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+@keyframes slideUp{from{opacity:0;}to{opacity:1;}}
+@media(max-width:600px){
+  .pdf-modal-header{padding:.6rem .9rem;}
+  .pdf-modal-title{font-size:.85rem;}
+  .pdf-modal-actions{gap:.25rem;}
+  .pdf-action-btn{padding:.38rem .65rem;font-size:.7rem;}
+  .pdf-modal-toolbar{padding:.38rem .9rem;}
+  .pdf-toolbar-hint{display:none;}
+}
 
 .pdf-modal-header{
   display:flex;align-items:center;justify-content:space-between;
@@ -1050,7 +1054,7 @@ footer{background:var(--ink);color:#5a4534;text-align:center;padding:1.5rem;
       <div class="card"><div class="card-icon">📚</div><h3>Syllabus</h3><p>Chapter-wise syllabus for all subjects, updated for the current academic year.</p><span class="card-link" onclick="showPage('syllabus')">View Syllabus →</span></div>
       <div class="card"><div class="card-icon">📅</div><h3>Annual Planning</h3><p>Month-wise lesson plans and academic calendar to stay on track all year.</p><span class="card-link" onclick="showPage('planning')">View Plan →</span></div>
       <div class="card"><div class="card-icon">📂</div><h3>Study Material</h3><p>Notes, worksheets, reference PDFs and other resources shared by the teacher.</p><span class="card-link" onclick="showPage('material')">View Material →</span></div>
-      <div class="card"><div class="card-icon">📝</div><h3>Question Papers</h3><p>Past year papers, practice sets, and model question papers for exam prep.</p><span class="card-link" onclick="showPage('papers')">Download Papers →</span></div>
+      <div class="card"><div class="card-icon">📝</div><h3>Question Papers</h3><p>Past year papers, practice sets, and model question papers for exam prep.</p><span class="card-link" onclick="showPage('papers')">View Papers →</span></div>
       <div class="card"><div class="card-icon">🎬</div><h3>Video Lectures</h3><p>Recorded lessons and concept explainers available on demand for revision.</p><span class="card-link" onclick="showPage('videos')">Watch Videos →</span></div>
       <div class="card"><div class="card-icon">✍️</div><h3>Blog</h3><p>Articles on study tips, career guidance, and exam strategies.</p><span class="card-link" onclick="showPage('blog')">Read Blog →</span></div>
     </div>
@@ -1096,7 +1100,7 @@ footer{background:var(--ink);color:#5a4534;text-align:center;padding:1.5rem;
   <div class="section">
     <div class="sec-hdr">
       <span class="sec-tag">Resources</span>
-      <h2 class="sec-title">Download & <em>Learn</em></h2>
+      <h2 class="sec-title">View & <em>Learn</em></h2>
       <div class="divider"></div>
     </div>
     <div class="material-grid" id="material-list">
@@ -1107,16 +1111,16 @@ footer{background:var(--ink);color:#5a4534;text-align:center;padding:1.5rem;
 
 <!-- ══════════ QUESTION PAPERS ══════════ -->
 <div class="page" id="page-papers">
-  <div class="page-hdr"><h1>📝 Question Papers</h1><p>Download past papers and practice sets</p></div>
+  <div class="page-hdr"><h1>📝 Question Papers</h1><p>View past papers and practice sets</p></div>
   <div class="section">
     <div class="sec-hdr">
-      <span class="sec-tag">Downloads</span>
+      <span class="sec-tag">View</span>
       <h2 class="sec-title">Practice <em>Papers</em></h2>
       <div class="divider"></div>
     </div>
     <div class="tbl-wrap">
       <table>
-        <thead><tr><th>Paper Title</th><th>Class</th><th>Subject</th><th>Year</th><th>Download</th></tr></thead>
+        <thead><tr><th>Paper Title</th><th>Class</th><th>Subject</th><th>Year</th><th>View</th></tr></thead>
         <tbody id="papers-list"><tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--muted)">No papers yet.</td></tr></tbody>
       </table>
     </div>
@@ -1586,8 +1590,7 @@ async function loadPublicPapers() {
     <td><strong>${p.title}</strong></td><td>${p.cls||''}</td><td>${p.subject||''}</td><td>${p.year||''}</td>
     <td>
       <div class="file-btns">
-        ${p.url?`<a class="btn-view-file" href="${buildViewUrl(p.url)}" target="_blank" rel="noopener">View</a>`:''}
-        ${p.url?`<a class="btn-dl-file" href="${buildDlUrl(p.url)}" target="_blank" rel="noopener">Download</a>`:''}
+        ${p.url?`<button class="btn-view-file" onclick="openPdfModal('${p.url.replace(/'/g,"\\'")}','${(p.title||'').replace(/'/g,"\\'")}','${(p.cls||'').replace(/'/g,"\\'")} · ${(p.subject||'').replace(/'/g,"\\'")}')">View</button>`:''}
       </div>
     </td>
   </tr>`).join('');
@@ -1641,8 +1644,7 @@ async function loadPublicMaterial() {
       <h4>${m.title}</h4>
       ${descHtml}
       ${m.url?`<div class="file-btns">
-        <a class="btn-view-file" href="${buildViewUrl(m.url)}" target="_blank" rel="noopener">👁 View</a>
-        <a class="btn-dl-file" href="${buildDlUrl(m.url)}" target="_blank" rel="noopener">↓ Download</a>
+        <button class="btn-view-file" onclick="openPdfModal('${m.url.replace(/'/g,"\\'")}','${(m.title||'').replace(/'/g,"\\'")}','${(m.type||'').replace(/'/g,"\\'")}')">👁 View</button>
       </div>`:''}
     </div>`;
   }).join('');
@@ -1740,47 +1742,16 @@ function validateUrl(url, fieldLabel) {
 }
 
 // ══════════════════════════════════════════════
-//  ☁️ CLOUDINARY CONFIG  (FREE — no credit card)
-//  1. Go to cloudinary.com → sign up free
-//  2. Dashboard → copy your "Cloud name"
-//  3. Settings → Upload → Add upload preset → mode: Unsigned → copy preset name
-//  4. Paste both values below
+//  📁 LOCAL FILE UPLOAD — createObjectURL
+//  Files are loaded locally in-browser.
+//  Use "Paste Link" for persistent/shareable URLs.
 // ══════════════════════════════════════════════
-const CLOUDINARY_CLOUD = 'dg6e31bqg';   // ← replace this
-const CLOUDINARY_PRESET = 'mdd_portal'; // ← replace this
 
-function uploadToCloudinary(file, onProgress) {
-  return new Promise((resolve, reject) => {
-    if (CLOUDINARY_CLOUD === 'YOUR_CLOUD_NAME') {
-      reject(new Error('Cloudinary not configured yet — add your Cloud Name and Upload Preset in the code'));
-      return;
-    }
-    // Decide resource_type:
-    // images → 'image' endpoint, everything else (PDF/doc/etc) → 'raw' endpoint
-    const isImage = /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(file.name);
-    const resourceType = isImage ? 'image' : 'raw';
+// Holds blob URLs keyed by a temp id so they survive the async save
+const _localBlobMap = {};
 
-    const fd = new FormData();
-    fd.append('file', file);
-    fd.append('upload_preset', CLOUDINARY_PRESET);
-    fd.append('folder', 'mdd_portal');
-
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/${resourceType}/upload`);
-
-    xhr.upload.onprogress = e => {
-      if (e.lengthComputable && onProgress) onProgress(Math.round(e.loaded / e.total * 100));
-    };
-    xhr.onload = () => {
-      try {
-        const res = JSON.parse(xhr.responseText);
-        if (res.secure_url) resolve(sanitizeUrl(res.secure_url));
-        else reject(new Error(res.error?.message || 'Upload failed — check your Cloud Name and Upload Preset are correct'));
-      } catch(e) { reject(e); }
-    };
-    xhr.onerror = () => reject(new Error('Network error — check internet connection and Cloudinary config'));
-    xhr.send(fd);
-  });
+function createLocalBlobUrl(file) {
+  return URL.createObjectURL(file);
 }
 
 // ── ADD FUNCTIONS ──
@@ -1855,7 +1826,7 @@ async function blogHandleImageUpload(input) {
   if (!file) return;
   if (file.size > 10 * 1024 * 1024) { toast('Image too large — max 10 MB', false); return; }
 
-  // Open modal immediately showing uploading state
+  // Open modal immediately
   var modal    = document.getElementById('blog-img-modal');
   var preview  = document.getElementById('blog-img-preview');
   var uploading= document.getElementById('blog-img-uploading');
@@ -1865,32 +1836,26 @@ async function blogHandleImageUpload(input) {
   _blogImgUrl = null;
   preview.style.display   = 'none';
   uploading.style.display = 'block';
-  uploading.textContent   = 'Uploading... 0%';
+  uploading.textContent   = 'Reading image…';
   insertBtn.disabled      = true;
   caption.value           = '';
   modal.classList.add('open');
 
-  // Show local preview immediately
+  // Read image as base64 data URL — no server upload needed
   var reader = new FileReader();
   reader.onload = function(e) {
-    preview.src           = e.target.result;
-    preview.style.display = 'block';
+    _blogImgUrl             = e.target.result; // base64 data URL
+    preview.src             = _blogImgUrl;
+    preview.style.display   = 'block';
+    uploading.style.display = 'none';
+    insertBtn.disabled      = false;
+    toast('Image ready — set options and click Insert Image');
+  };
+  reader.onerror = function() {
+    modal.classList.remove('open');
+    toast('Could not read image file', false);
   };
   reader.readAsDataURL(file);
-
-  try {
-    var url = await uploadToCloudinary(file, function(pct) {
-      uploading.textContent = 'Uploading... ' + pct + '%';
-    });
-    _blogImgUrl             = url;
-    uploading.style.display = 'none';
-    preview.src             = url;
-    insertBtn.disabled      = false;
-    toast('Upload done — set options and click Insert Image');
-  } catch(e) {
-    modal.classList.remove('open');
-    toast('Image upload failed: ' + e.message, false);
-  }
   input.value = '';
 }
 
@@ -2095,12 +2060,13 @@ async function addPaper() {
   if(isUpload) {
     const file = document.getElementById('p-file-input').files[0];
     if(!file){ toast('Please select a file to upload, or switch to Paste Link',false); return; }
-    if(file.size > 25*1024*1024){ toast('File too large — max 25 MB on free plan',false); return; }
+    if(file.size > 50*1024*1024){ toast('File too large — max 50 MB',false); return; }
     try {
-      showProgress('p', 0);
-      url = await uploadToCloudinary(file, pct => showProgress('p', pct));
-      hideProgress('p');
-    } catch(e){ hideProgress('p'); toast('Upload failed: '+e.message, false); console.error(e); return; }
+      showProgress('p', 30);
+      url = createLocalBlobUrl(file);
+      showProgress('p', 100);
+      setTimeout(()=>hideProgress('p'), 500);
+    } catch(e){ hideProgress('p'); toast('File read failed: '+e.message, false); console.error(e); return; }
   } else {
     url = sanitizeUrl(document.getElementById('p-url').value);
     if(!validateUrl(url, 'Paper link')) return;
@@ -2111,7 +2077,7 @@ async function addPaper() {
       cls:document.getElementById('p-class').value.trim(),
       subject:document.getElementById('p-subject').value.trim(),
       year:document.getElementById('p-year').value.trim(),
-      url, source: isUpload ? 'cloudinary' : 'link'});
+      url, source: isUpload ? 'local' : 'link'});
     ['p-title','p-class','p-subject','p-year'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
     const pu=document.getElementById('p-url'); if(pu) pu.value='';
     document.getElementById('p-file-input').value='';
@@ -2132,12 +2098,13 @@ async function addMaterial() {
   if(isUpload) {
     const file = document.getElementById('m-file-input').files[0];
     if(!file){ toast('Please select a file to upload, or switch to Paste Link',false); return; }
-    if(file.size > 25*1024*1024){ toast('File too large — max 25 MB on free plan',false); return; }
+    if(file.size > 50*1024*1024){ toast('File too large — max 50 MB',false); return; }
     try {
-      showProgress('m', 0);
-      url = await uploadToCloudinary(file, pct => showProgress('m', pct));
-      hideProgress('m');
-    } catch(e){ hideProgress('m'); toast('Upload failed: '+e.message, false); console.error(e); return; }
+      showProgress('m', 30);
+      url = createLocalBlobUrl(file);
+      showProgress('m', 100);
+      setTimeout(()=>hideProgress('m'), 500);
+    } catch(e){ hideProgress('m'); toast('File read failed: '+e.message, false); console.error(e); return; }
   } else {
     url = sanitizeUrl(document.getElementById('m-url').value);
     if(!validateUrl(url, 'Material link')) return;
@@ -2147,7 +2114,7 @@ async function addMaterial() {
     await window.FB.addItem('material',{title:t,
       type:document.getElementById('m-type').value,
       subject:document.getElementById('m-subject').value.trim(),
-      desc, url, source: isUpload ? 'cloudinary' : 'link'});
+      desc, url, source: isUpload ? 'local' : 'link'});
     ['m-title','m-subject'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
     const mu=document.getElementById('m-url'); if(mu) mu.value='';
     document.getElementById('m-file-input').value='';
@@ -2256,21 +2223,9 @@ function toggleAcc(hdr){ hdr.parentElement.classList.toggle('open'); }
 // ══════════════════════════════
 // ── Detect file type from URL ──────────────────────────────────────────────
 // ── Build view URL: opens cleanly in new tab ────────────────────────────────
-// ── Clean Cloudinary URL — remove any restricted folder prefix ───────────────
-function cleanCloudinaryUrl(url) {
-  if (!url || !url.includes('res.cloudinary.com')) return url;
-  // Strip restricted "samples/ecommerce/" folder prefix from public_id part
-  // e.g. /raw/upload/v123/samples/ecommerce/file.pdf -> /raw/upload/v123/file.pdf
-  url = url.replace(/\/upload\/(v\d+\/)?samples\/ecommerce\//,
-                    function(m, v) { return '/upload/' + (v||''); });
-  url = url.replace(/\/upload\/(v\d+\/)?samples\//,
-                    function(m, v) { return '/upload/' + (v||''); });
-  return url;
-}
-
 function buildViewUrl(url) {
   if (!url) return '#';
-  url = cleanCloudinaryUrl(url.trim().replace(/^["']+|["']+$/g, ''));
+  url = url.trim().replace(/^["']+|["']+$/g, '');
   if (url.includes('drive.google.com') || url.includes('docs.google.com')) {
     var m1 = url.match(/\/file\/d\/([^/]+)/);
     var m2 = url.match(/[?&]id=([^&]+)/);
@@ -2286,11 +2241,7 @@ function buildViewUrl(url) {
 // ── Build download URL ────────────────────────────────────────────────────────
 function buildDlUrl(url) {
   if (!url) return '#';
-  url = cleanCloudinaryUrl(url.trim().replace(/^["']+|["']+$/g, ''));
-  if (url.includes('res.cloudinary.com')) {
-    // fl_attachment forces Content-Disposition: attachment (download dialog)
-    return url.replace('/upload/', '/upload/fl_attachment/');
-  }
+  url = url.trim().replace(/^["']+|["']+$/g, '');
   if (url.includes('drive.google.com') || url.includes('docs.google.com')) {
     var m1 = url.match(/\/file\/d\/([^/]+)/);
     var m2 = url.match(/[?&]id=([^&]+)/);
@@ -2309,22 +2260,15 @@ function sanitizeUrl(raw) {
   return u.replace(/[.,)>\]]+$/, '');
 }
 
-// ── triggerDownload: anchor click — never blocked ────────────────────────────
-function triggerDownload(rawUrl, filename) {
-  var url = buildDlUrl(sanitizeUrl(rawUrl));
-  var a   = document.createElement('a');
-  a.href  = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
-  document.body.appendChild(a); a.click();
-  setTimeout(function(){ a.remove(); }, 300);
-}
+
 
 // ── openPdfModal: action card with real <a> links ────────────────────────────
 function openPdfModal(rawUrl, title, meta) {
   var url     = sanitizeUrl(rawUrl);
   var viewUrl = buildViewUrl(url);
-  var dlUrl   = buildDlUrl(url);
-  var isImage = /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(url.split('?')[0]) ||
-                (url.includes('res.cloudinary.com') && url.includes('/image/upload/'));
+  var isImage = /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(url.split('?')[0]);
+  // Blob/local URLs — render directly in iframe (Change 1: createObjectURL method)
+  var isBlobOrLocal = url.startsWith('blob:') || url.startsWith('data:');
 
   var modal   = document.getElementById('pdf-modal');
   var body    = document.getElementById('pdf-modal-body');
@@ -2333,19 +2277,22 @@ function openPdfModal(rawUrl, title, meta) {
   var badge   = document.getElementById('pdf-type-badge');
   var hint    = document.getElementById('pdf-toolbar-hint');
   var iconEl  = document.getElementById('pdf-file-icon');
-  var dlBtn   = document.getElementById('pdf-download-btn');
   var nwBtn   = document.getElementById('pdf-newwin-btn');
 
   titleEl.textContent = title || 'Document';
   metaEl.textContent  = meta  || '';
-  badge.textContent   = isImage ? 'Image' : 'Document';
+  badge.textContent   = isImage ? 'Image' : 'PDF';
   badge.className     = isImage ? 'pdf-type-badge img' : 'pdf-type-badge pdf';
-  iconEl.textContent  = isImage ? 'IMG' : 'DOC';
-  hint.textContent    = 'Opens in a new tab';
+  iconEl.textContent  = isImage ? '🖼️' : '📄';
+  hint.textContent    = isBlobOrLocal ? 'View-only · local file' : 'View only · use browser zoom to navigate';
 
-  nwBtn.href = viewUrl;
-  if (dlBtn.tagName === 'A') { dlBtn.href = dlUrl; dlBtn.target = '_blank'; dlBtn.rel = 'noopener'; }
-  else dlBtn.onclick = function(){ window.open(dlUrl, '_blank', 'noopener'); };
+  // Open-in-new-tab: only works for non-blob external URLs
+  if (isBlobOrLocal) {
+    nwBtn.style.display = 'none';
+  } else {
+    nwBtn.style.display = '';
+    nwBtn.href = viewUrl;
+  }
 
   body.innerHTML = '';
   modal.classList.add('open');
@@ -2355,7 +2302,14 @@ function openPdfModal(rawUrl, title, meta) {
     var img = document.createElement('img');
     img.className = 'preview-img'; img.src = url;
     body.appendChild(img);
+  } else if (isBlobOrLocal) {
+    // ── Local file: show directly in iframe — #toolbar=0 hides Chrome's download/print bar ──
+    var iframe = document.createElement('iframe');
+    iframe.src = url + '#toolbar=0&navpanes=0';
+    iframe.style.cssText = 'width:100%;height:100%;border:none;display:block;';
+    body.appendChild(iframe);
   } else {
+    // ── External URL: show action card (view-only, no download) ──
     body.innerHTML =
       '<div style="position:absolute;inset:0;display:flex;flex-direction:column;' +
       'align-items:center;justify-content:center;gap:1.6rem;padding:2rem;' +
@@ -2364,7 +2318,7 @@ function openPdfModal(rawUrl, title, meta) {
       '<div style="width:80px;height:80px;border-radius:20px;display:flex;' +
       'align-items:center;justify-content:center;font-size:2.6rem;' +
       'background:linear-gradient(135deg,#e8610a,#f07d2a);' +
-      'box-shadow:0 8px 32px rgba(232,97,10,.45);">PDF</div>' +
+      'box-shadow:0 8px 32px rgba(232,97,10,.45);">📄</div>' +
 
       '<div><p style="color:#fff;font-size:1.1rem;font-weight:700;' +
       'font-family:Playfair Display,serif;margin-bottom:.4rem;">' +
@@ -2373,23 +2327,15 @@ function openPdfModal(rawUrl, title, meta) {
       '</div>' +
 
       '<div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;">' +
-
       '<a href="' + viewUrl + '" target="_blank" rel="noopener" ' +
       'style="display:inline-flex;align-items:center;gap:.6rem;padding:.9rem 2rem;' +
       'border-radius:12px;font-size:.92rem;font-weight:700;text-decoration:none;' +
       'background:linear-gradient(135deg,#e8610a,#f07d2a);color:#fff;' +
-      'box-shadow:0 6px 20px rgba(232,97,10,.45);">View File</a>' +
-
-      '<a href="' + dlUrl + '" target="_blank" rel="noopener" ' +
-      'style="display:inline-flex;align-items:center;gap:.6rem;padding:.9rem 2rem;' +
-      'border-radius:12px;font-size:.92rem;font-weight:700;text-decoration:none;' +
-      'background:rgba(255,255,255,.12);color:#fff;' +
-      'border:1.5px solid rgba(255,255,255,.25);">Download</a>' +
-
+      'box-shadow:0 6px 20px rgba(232,97,10,.45);">👁 View File</a>' +
       '</div>' +
 
       '<p style="color:rgba(255,255,255,.3);font-size:.75rem;max-width:280px;line-height:1.6;">' +
-      'Opens in a new tab. Use browser back button to return.</p>' +
+      'View only — opens in a new tab.</p>' +
       '</div>';
   }
 }
@@ -2401,11 +2347,8 @@ function closePdfModal() {
 }
 
 
-// Close on backdrop click + Escape — wait for DOM
+// Close on Escape key only (modal is full screen, no backdrop to click)
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('pdf-modal').addEventListener('click', function(e){
-    if (e.target === this) closePdfModal();
-  });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closePdfModal(); });
 });
 
@@ -2426,7 +2369,6 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
       <div class="pdf-modal-actions">
         <a class="pdf-action-btn newwin" id="pdf-newwin-btn" href="#" target="_blank">↗ Open in New Tab</a>
-        <a class="pdf-action-btn download" id="pdf-download-btn" href="#" target="_blank" rel="noopener">↓ Download</a>
         <button class="pdf-close-btn" onclick="closePdfModal()">✕</button>
       </div>
     </div>
